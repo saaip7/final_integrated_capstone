@@ -1,0 +1,134 @@
+Configuration	semua_inti
+STM32CubeMX 	6.12.1
+Date	11/09/2025
+MCU	STM32F407VGTx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM1	Internal Clock	TIM1_VS_ClockSourceINT	VP_TIM1_VS_ClockSourceINT
+TIM1	Input Capture direct mode	TIM1_CH1	PE9
+TIM1	Input Capture direct mode	TIM1_CH2	PE11
+TIM1	Input Capture direct mode	TIM1_CH3	PE13
+TIM1	Input Capture direct mode	TIM1_CH4	PA11
+TIM2	Internal Clock	TIM2_VS_ClockSourceINT	VP_TIM2_VS_ClockSourceINT
+TIM3	PWM Generation CH2	TIM3_CH2	PB5
+TIM3	PWM Generation CH3	TIM3_CH3	PB0
+TIM3	PWM Generation CH4	TIM3_CH4	PB1
+TIM8	Internal Clock	TIM8_VS_ClockSourceINT	VP_TIM8_VS_ClockSourceINT
+TIM8	Input Capture direct mode	TIM8_CH1	PC6
+TIM8	Input Capture direct mode	TIM8_CH2	PC7
+TIM8	Input Capture direct mode	TIM8_CH3	PC8
+TIM8	Input Capture direct mode	TIM8_CH4	PC9
+USART1	Asynchronous	USART1_RX	PA10
+USART1	Asynchronous	USART1_TX	PA9
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PE3	GPIO_Output	
+3	PE4	GPIO_Output	
+29	PA4	GPIO_EXTI4	
+33	PC4	GPIO_Output	M2_In2_KnB
+34	PC5	GPIO_Output	M2_In1_KnB
+35	PB0	TIM3_CH3	Motor3
+36	PB1	TIM3_CH4	Motor4
+37	PB2	GPIO_Output	M2_In4_KrB
+38	PE7	GPIO_Output	M2_In3_KrB
+40	PE9	TIM1_CH1	Echo_1
+41	PE10	GPIO_Output	Trig_1
+42	PE11	TIM1_CH2	Echo_2
+43	PE12	GPIO_Output	Trig_2
+44	PE13	TIM1_CH3	Echo_3
+45	PE14	GPIO_Output	Trig_3
+59	PD12	GPIO_Output	Trig_8
+60	PD13	GPIO_Output	Trig_7
+61	PD14	GPIO_Output	Trig_6
+62	PD15	GPIO_Output	Trig_5
+63	PC6	TIM8_CH1	Echo_8
+64	PC7	TIM8_CH2	Echo_7
+65	PC8	TIM8_CH3	Echo_6
+66	PC9	TIM8_CH4	Echo_5
+68	PA9	USART1_TX	
+69	PA10	USART1_RX	
+70	PA11	TIM1_CH4	Echo_4
+71	PA12	GPIO_Output	Trig_4
+91	PB5	TIM3_CH2	Motor2
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM1	Internal Clock	TIM1_VS_ClockSourceINT	VP_TIM1_VS_ClockSourceINT
+TIM1	Input Capture direct mode	TIM1_CH1	PE9
+TIM1	Input Capture direct mode	TIM1_CH2	PE11
+TIM1	Input Capture direct mode	TIM1_CH3	PE13
+TIM1	Input Capture direct mode	TIM1_CH4	PA11
+TIM2	Internal Clock	TIM2_VS_ClockSourceINT	VP_TIM2_VS_ClockSourceINT
+TIM3	PWM Generation CH2	TIM3_CH2	PB5
+TIM3	PWM Generation CH3	TIM3_CH3	PB0
+TIM3	PWM Generation CH4	TIM3_CH4	PB1
+TIM8	Internal Clock	TIM8_VS_ClockSourceINT	VP_TIM8_VS_ClockSourceINT
+TIM8	Input Capture direct mode	TIM8_CH1	PC6
+TIM8	Input Capture direct mode	TIM8_CH2	PC7
+TIM8	Input Capture direct mode	TIM8_CH3	PC8
+TIM8	Input Capture direct mode	TIM8_CH4	PC9
+USART1	Asynchronous	USART1_RX	PA10
+USART1	Asynchronous	USART1_TX	PA9
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PE3	GPIO_Output	
+3	PE4	GPIO_Output	
+29	PA4	GPIO_EXTI4	
+33	PC4	GPIO_Output	M2_In2_KnB
+34	PC5	GPIO_Output	M2_In1_KnB
+35	PB0	TIM3_CH3	Motor3
+36	PB1	TIM3_CH4	Motor4
+37	PB2	GPIO_Output	M2_In4_KrB
+38	PE7	GPIO_Output	M2_In3_KrB
+40	PE9	TIM1_CH1	Echo_1
+41	PE10	GPIO_Output	Trig_1
+42	PE11	TIM1_CH2	Echo_2
+43	PE12	GPIO_Output	Trig_2
+44	PE13	TIM1_CH3	Echo_3
+45	PE14	GPIO_Output	Trig_3
+59	PD12	GPIO_Output	Trig_8
+60	PD13	GPIO_Output	Trig_7
+61	PD14	GPIO_Output	Trig_6
+62	PD15	GPIO_Output	Trig_5
+63	PC6	TIM8_CH1	Echo_8
+64	PC7	TIM8_CH2	Echo_7
+65	PC8	TIM8_CH3	Echo_6
+66	PC9	TIM8_CH4	Echo_5
+68	PA9	USART1_TX	
+69	PA10	USART1_RX	
+70	PA11	TIM1_CH4	Echo_4
+71	PA12	GPIO_Output	Trig_4
+91	PB5	TIM3_CH2	Motor2
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : semua_inti
+Project Folder : D:\Capstone\stm32\final\Semua Komponen
+Toolchain / IDE : STM32CubeIDE
+Firmware Package Name and Version : STM32Cube FW_F4 V1.28.3
+
+
+Code Generation Settings : 
+STM32Cube MCU packages and embedded software packs : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : 
+
+
+
+
+
