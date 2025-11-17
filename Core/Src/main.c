@@ -29,7 +29,9 @@
 #include <stdbool.h>
 #include "hcsr04_sensor.h"
 #include "motor_control.h"
+#include "i2c.h"
 #include "math.h"
+#include "mpu6050.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +53,7 @@ typedef enum {
 	STATE_LINTASAN_2_MAJU,
 	STATE_LINTASAN_2_MUNDUR_SEBENTAR,
 	STATE_LINTASAN_2_PUTAR_180,
+	STATE_LINTASAN_2_KOREKSI_LURUS_180,
 
 	// Lintasan 3 (Terbalik)
 	STATE_LINTASAN_3_MAJU,
@@ -96,6 +99,7 @@ typedef enum {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -118,6 +122,16 @@ bool sedang_bergerak = false;
 // Variable untuk koreksi lurus
 uint32_t waktu_mulai_koreksi = 0;
 uint8_t counter_koreksi_stabil = 0;
+
+// Variable untuk putar 180
+uint32_t waktu_mulai_putar_180 = 0;
+
+// Variable untuk MPU6050
+MPU6050_t MPU6050;
+float yawAngle_deg = 0.0f;
+uint32_t lastTick = 0;
+float dt = 0.0f;
+char uart_buf[150];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -179,6 +193,7 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM9_Init();
   MX_TIM12_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
   // Initialize HC-SR04 sensor library
@@ -194,6 +209,14 @@ int main(void)
   HAL_Delay(60);
 
   Motor_Init();
+
+  // Initialize MPU6050
+  MPU6050_Init(&hi2c1);
+  printf("MPU6050 initialized.\r\n");
+  HAL_Delay(100);
+
+  // Initialize timing untuk yaw calculation
+  lastTick = HAL_GetTick();
 
   printf("SYSTEM READY - CONTINUOUS FORWARD MODE\r\n");
   printf("Sensor settling complete.\r\n");
@@ -257,6 +280,20 @@ int main(void)
     float sensor_f = HC_SR04_Calculate_Distance(&sensors[5]); // Belakang Kanan
     float sensor_g = HC_SR04_Calculate_Distance(&sensors[6]); // Samping Kanan Belakang
     float sensor_h = HC_SR04_Calculate_Distance(&sensors[7]); // Samping Kanan Depan
+
+    // ========================================================================
+    // LANGKAH 1.5: UPDATE MPU6050 DAN YAW ANGLE
+    // ========================================================================
+    // 1. Hitung delta time (dt)
+    uint32_t currentTick = HAL_GetTick();
+    dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
+    lastTick = currentTick;
+
+    // 2. Baca data MPU6050
+    MPU6050_Read_All(&hi2c1, &MPU6050);
+
+    // 3. Update yaw angle dengan integrasi gyroscope
+    yawAngle_deg += MPU6050.Gz * dt;
 
     // ========================================================================
     // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
@@ -563,19 +600,137 @@ int main(void)
             } else {
                 Motor_Stop_All();
                 printf("STATE L2: Posisi mundur aman, siap putar 180.\r\n");
+
+                // Reset yaw angle ke 0 sebelum mulai putar
+                yawAngle_deg = 0.0f;
+                printf("Yaw angle di-reset ke 0.\r\n");
+
                 keadaan_robot = STATE_LINTASAN_2_PUTAR_180;
+                waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout
             }
             break;
 
         case STATE_LINTASAN_2_PUTAR_180:
-            printf("STATE L2: Putar 180 derajat.\r\n");
-            Motor_Rotate_Right(25); // Menggunakan kecepatan sedikit lebih tinggi untuk putaran
-            HAL_Delay(3000); // Asumsi durasi putar 180 derajat, perlu kalibrasi
-            Motor_Stop_All();
-            printf("STATE L2: Putaran selesai, siap masuk Lintasan 3.\r\n");
-            keadaan_robot = STATE_LINTASAN_3_MAJU;
-            waktu_terakhir_gerak = HAL_GetTick();
-            sedang_bergerak = true;
+            // ========================================================================
+            // TUJUAN: Putar 180 derajat dengan MPU6050 (yaw angle)
+            // STRATEGI: Reset yaw = 0, putar sampai yaw > 180°, lalu koreksi lurus
+            // ========================================================================
+
+            // Timeout protection - maksimal 10 detik untuk putar 180
+            if (HAL_GetTick() - waktu_mulai_putar_180 > 10000) {
+                Motor_Stop_All();
+                printf("STATE L2: Timeout putar 180° (10 detik), paksa lanjut!\r\n");
+                keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS_180;
+                waktu_mulai_koreksi = HAL_GetTick();
+                counter_koreksi_stabil = 0;
+                waktu_mulai_putar_180 = 0;
+                break;
+            }
+
+            // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
+            if (fabs(yawAngle_deg) > 180.0f) {
+                // Sudah putar 180° (meskipun belum tentu lurus)
+                Motor_Stop_All();
+                printf("STATE L2: Putaran 180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
+                HAL_Delay(500);
+
+                // Transisi ke koreksi lurus dengan sensor belakang
+                printf("STATE L2: Masuk koreksi lurus dengan sensor belakang.\r\n");
+                keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS_180;
+                waktu_mulai_koreksi = HAL_GetTick();
+                counter_koreksi_stabil = 0;
+                waktu_mulai_putar_180 = 0;
+
+            } else {
+                // Belum 180°, lanjut putar
+                Motor_Rotate_Right(25);
+
+                // Debug info (setiap ~500ms untuk tidak spam)
+                static uint32_t last_debug_print = 0;
+                if (HAL_GetTick() - last_debug_print > 500) {
+                    printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+                    last_debug_print = HAL_GetTick();
+                }
+            }
+            break;
+
+        case STATE_LINTASAN_2_KOREKSI_LURUS_180:
+            // ========================================================================
+            // TUJUAN: Fine-tuning kelurusan robot dengan sensor belakang (E & F)
+            // Setelah putar 180° dengan MPU6050, pastikan lurus dengan dinding
+            // ========================================================================
+
+            // Timeout check - maksimal 5 detik untuk koreksi
+            if (HAL_GetTick() - waktu_mulai_koreksi > 5000) {
+                Motor_Stop_All();
+                printf("STATE L2: Timeout koreksi lurus (5 detik), paksa lanjut.\r\n");
+                keadaan_robot = STATE_LINTASAN_3_MAJU;
+                waktu_terakhir_gerak = HAL_GetTick();
+                sedang_bergerak = true;
+                break;
+            }
+
+            // Validasi: Pastikan sensor belakang (E & F) mendeteksi dinding
+            if ( (sensor_e > 0 && sensor_e < 50) && (sensor_f > 0 && sensor_f < 50) ) {
+
+                float selisih_belakang = fabs(sensor_e - sensor_f);
+
+                if (selisih_belakang > 1.0f) {
+                    // Robot belum lurus, perlu koreksi
+                    counter_koreksi_stabil = 0;  // Reset counter stabilitas
+
+                    if (sensor_e > sensor_f) {
+                        // Sensor E (belakang kiri) lebih jauh
+                        // Putar kiri untuk luruskan
+                        printf("Koreksi L2: Putar kiri | E:%.1f > F:%.1f | Diff:%.1f\r\n",
+                               sensor_e, sensor_f, selisih_belakang);
+                        Motor_Rotate_Left(15);
+                        HAL_Delay(100);
+                        Motor_Stop_All();
+                        HAL_Delay(50);
+
+                    } else {
+                        // Sensor F (belakang kanan) lebih jauh
+                        // Putar kanan untuk luruskan
+                        printf("Koreksi L2: Putar kanan | F:%.1f > E:%.1f | Diff:%.1f\r\n",
+                               sensor_f, sensor_e, selisih_belakang);
+                        Motor_Rotate_Right(15);
+                        HAL_Delay(100);
+                        Motor_Stop_All();
+                        HAL_Delay(50);
+                    }
+
+                } else {
+                    // Robot sudah cukup lurus (selisih <= 1.0cm)
+                    counter_koreksi_stabil++;
+                    printf("Lurus L2! E:%.1f F:%.1f | Diff:%.1f | Stabil:%d/3\r\n",
+                           sensor_e, sensor_f, selisih_belakang, counter_koreksi_stabil);
+
+                    if (counter_koreksi_stabil >= 3) {
+                        // Validasi: Sudah lurus 3x pembacaan berturut-turut
+                        Motor_Stop_All();
+                        printf("STATE L2: Koreksi lurus SELESAI! Lanjut Lintasan 3.\r\n");
+                        HAL_Delay(1000);
+                        keadaan_robot = STATE_LINTASAN_3_MAJU;
+                        waktu_terakhir_gerak = HAL_GetTick();
+                        sedang_bergerak = true;
+                    } else {
+                        // Tunggu pembacaan sensor berikutnya untuk validasi
+                        Motor_Stop_All();
+                        HAL_Delay(100);
+                    }
+                }
+
+            } else {
+                // Sensor belakang tidak mendeteksi dinding (nilai 0 atau > 50cm)
+                printf("Warning L2: Dinding belakang tidak terdeteksi (E:%.1f F:%.1f)\r\n",
+                       sensor_e, sensor_f);
+                printf("STATE L2: Skip koreksi, langsung ke Lintasan 3.\r\n");
+                Motor_Stop_All();
+                keadaan_robot = STATE_LINTASAN_3_MAJU;
+                waktu_terakhir_gerak = HAL_GetTick();
+                sedang_bergerak = true;
+            }
             break;
 
         case STATE_LINTASAN_3_MAJU:
@@ -679,7 +834,7 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 1 */
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 167;
+  htim1.Init.Prescaler = 83;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 65535;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -902,7 +1057,7 @@ static void MX_TIM8_Init(void)
   /* USER CODE BEGIN TIM8_Init 1 */
   /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
-  htim8.Init.Prescaler = 167;
+  htim8.Init.Prescaler = 83;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim8.Init.Period = 65535;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -974,7 +1129,7 @@ static void MX_TIM9_Init(void)
   htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim9.Init.Period = 8799;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
   {
     Error_Handler();

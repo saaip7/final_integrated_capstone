@@ -80,6 +80,8 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 1 */
 }
 
+/* NOTE: HAL_I2C_MspInit and HAL_I2C_MspDeInit moved to i2c.c to avoid duplication */
+
 /**
 * @brief TIM_Base MSP Initialization
 * This function configures the hardware resources used in this example
