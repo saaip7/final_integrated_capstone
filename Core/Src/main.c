@@ -352,7 +352,7 @@ int main(void)
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms) {
                     Motor_Stop_All();
 
-                    //!PLACEHOLDER CAPTURE
+                    //TODO: !PLACEHOLDER CAPTURE
                     sedang_bergerak = false;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Berhenti sejenak...\r\n");
@@ -538,7 +538,7 @@ int main(void)
                 Motor_Stop_All();
                 printf("Mentok belakang tercapai. Capture #2 (Belakang)!\r\n");
 
-                //!PLACEHOLDER CAPTURE
+                //TODO: !PLACEHOLDER CAPTURE
                 HAL_Delay(take_photo_ms); // Jeda untuk capture masih blocking, bisa kita perbaiki nanti
                 printf("STATE: Selesai manuver belakang, lanjut maju dari belakang.\r\n");
                 keadaan_robot = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
@@ -554,7 +554,7 @@ int main(void)
                 // Sudah mencapai jarak yang diinginkan, berhenti
                 Motor_Stop_All();
 
-                //!PLACEHOLDER CAPTURE
+                //TODO: !PLACEHOLDER CAPTURE
 
                 printf("STATE: Maju dari belakang selesai, siap untuk lintasan 2.\r\n");
                 keadaan_robot = STATE_LINTASAN_2_MAJU;
@@ -584,7 +584,7 @@ int main(void)
             } else {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
 
-                	//!PLACEHOLDER CAPTURE
+                	//TODO: !PLACEHOLDER CAPTURE
                     sedang_bergerak = true;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Melanjutkan gerak maju (L2)...\r\n");
