@@ -143,47 +143,42 @@ void Motor_SetSpeed(uint8_t motor_id, int16_t speed) {
         return;
     }
 
-    // Use motor-specific PWM conversion for accurate voltage control
     uint16_t duty = speed_to_duty_motor(motor_id, speed);
 
-    // Motor kiri (C & D) polaritas terbalik, perlu inversi
-    bool is_left_motor = (motor_id == MOTOR_2 || motor_id == MOTOR_4);  // C = MOTOR_2, D = MOTOR_4
+    // Polarity based on user's observation: Invert previous logic
+    bool is_left_motor = (motor_id == MOTOR_2 || motor_id == MOTOR_4);
 
-    if (speed > 0) {
-        // Forward - INVERTED: All motors use LPWM for forward
+    if (speed > 0) { // MAJU (sekarang akan memutar motor ke arah yang sebelumnya mundur)
         motors[motor_id].direction = MOTOR_DIR_FORWARD;
         if (is_left_motor) {
-            // Motor kiri: RPWM = maju, LPWM = 0 (INVERTED)
+            // Motor Kiri Maju = RPWM (dibalik dari sebelumnya)
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_rpwm, duty);
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_lpwm, 0);
         } else {
-            // Motor kanan: LPWM = maju, RPWM = 0 (INVERTED)
+            // Motor Kanan Maju = LPWM (dibalik dari sebelumnya)
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_rpwm, 0);
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_lpwm, duty);
         }
     }
-    else if (speed < 0) {
-        // Reverse - INVERTED: All motors use RPWM for reverse
+    else if (speed < 0) { // MUNDUR (sekarang akan memutar motor ke arah yang sebelumnya maju)
         motors[motor_id].direction = MOTOR_DIR_REVERSE;
         if (is_left_motor) {
-            // Motor kiri: LPWM = mundur, RPWM = 0 (INVERTED)
+            // Motor Kiri Mundur = LPWM (dibalik dari sebelumnya)
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_rpwm, 0);
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_lpwm, duty);
         } else {
-            // Motor kanan: RPWM = mundur, LPWM = 0 (INVERTED)
+            // Motor Kanan Mundur = RPWM (dibalik dari sebelumnya)
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_rpwm, duty);
             __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_lpwm, 0);
         }
     }
-    else {
-        // Stop
+    else { // BERHENTI
         motors[motor_id].direction = MOTOR_DIR_STOP;
         __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_rpwm, 0);
         __HAL_TIM_SET_COMPARE(motors[motor_id].htim, motors[motor_id].channel_lpwm, 0);
     }
 
-    // Store the percentage speed for reporting
-    motors[motor_id].current_speed = speed_to_duty(speed);
+    motors[motor_id].current_speed = speed;
 }
 
 /**
@@ -261,8 +256,8 @@ void Motor_Turn_Left(uint8_t speed) {
     Motor_SetSpeed(MOTOR_3, speed);
 
     // Left side motors at half speed
-    Motor_SetSpeed(MOTOR_2, speed / 2);
-    Motor_SetSpeed(MOTOR_4, speed / 2);
+    Motor_SetSpeed(MOTOR_2, -speed);
+    Motor_SetSpeed(MOTOR_4, -speed);
 }
 
 /**

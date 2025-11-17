@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := hcsr04
+BUILD_ARTIFACT_NAME := final_integrate
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-hcsr04.elf \
+final_integrate.elf \
 
 MAP_FILES += \
-hcsr04.map \
+final_integrate.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-hcsr04.list \
+final_integrate.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: hcsr04.elf secondary-outputs
+main-build: final_integrate.elf secondary-outputs
 
 # Tool invocations
-hcsr04.elf hcsr04.map: $(OBJS) $(USER_OBJS) D:\context_capstone\integrasi\final_integrated\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "hcsr04.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\context_capstone\integrasi\final_integrated\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="hcsr04.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+final_integrate.elf final_integrate.map: $(OBJS) $(USER_OBJS) E:\capstone\final_integrated\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "final_integrate.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"E:\capstone\final_integrated\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="final_integrate.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-hcsr04.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "hcsr04.list"
+final_integrate.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "final_integrate.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout hcsr04.elf hcsr04.list hcsr04.map
+	-$(RM) default.size.stdout final_integrate.elf final_integrate.list final_integrate.map
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
