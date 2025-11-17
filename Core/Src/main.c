@@ -351,6 +351,8 @@ int main(void)
             if (sedang_bergerak) {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms) {
                     Motor_Stop_All();
+
+                    //!PLACEHOLDER CAPTURE
                     sedang_bergerak = false;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Berhenti sejenak...\r\n");
@@ -417,6 +419,9 @@ int main(void)
             // Tujuan: Mundur sampai jarak tertentu
             if (sensor_a < jarak_stop_depan || sensor_b < jarak_stop_depan) {
                 // Masih terlalu dekat, lanjutkan mundur
+
+            	//Delay biar ga langsung mundur setelah mentok (UNVERIFIED)
+            	HAL_Delay(2000);
                 Motor_Reverse(15);
             } else {
                 // Target tercapai, berhenti
@@ -532,6 +537,8 @@ int main(void)
                 // Target tercapai, berhenti
                 Motor_Stop_All();
                 printf("Mentok belakang tercapai. Capture #2 (Belakang)!\r\n");
+
+                //!PLACEHOLDER CAPTURE
                 HAL_Delay(take_photo_ms); // Jeda untuk capture masih blocking, bisa kita perbaiki nanti
                 printf("STATE: Selesai manuver belakang, lanjut maju dari belakang.\r\n");
                 keadaan_robot = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
@@ -546,6 +553,9 @@ int main(void)
             } else {
                 // Sudah mencapai jarak yang diinginkan, berhenti
                 Motor_Stop_All();
+
+                //!PLACEHOLDER CAPTURE
+
                 printf("STATE: Maju dari belakang selesai, siap untuk lintasan 2.\r\n");
                 keadaan_robot = STATE_LINTASAN_2_MAJU;
                 // Reset timer untuk state berikutnya jika STATE_LINTASAN_2_MAJU menggunakan timer
@@ -573,6 +583,8 @@ int main(void)
                 }
             } else {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
+
+                	//!PLACEHOLDER CAPTURE
                     sedang_bergerak = true;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Melanjutkan gerak maju (L2)...\r\n");
