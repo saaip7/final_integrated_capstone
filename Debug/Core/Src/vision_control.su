@@ -1,0 +1,5 @@
+../Core/Src/vision_control.c:20:6:Vision_Init	16	static
+../Core/Src/vision_control.c:28:17:Vision_Is_Ready	24	static
+../Core/Src/vision_control.c:48:17:Vision_Set_Group_ID	24	static
+../Core/Src/vision_control.c:61:17:Vision_Start_Capture	24	static
+../Core/Src/vision_control.c:85:17:Vision_Get_Status	16	static
