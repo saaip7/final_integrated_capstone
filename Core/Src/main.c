@@ -93,8 +93,9 @@ typedef enum {
 #define delay_jalan_ms 1000
 #define delay_berhenti_ms 1000
 #define take_photo_ms 1000
-#define otw_mentok_depan 2.0f
-#define otw_mentok_belakang 2.0f
+
+#define otw_mentok_depan 10.0f
+#define otw_mentok_belakang 10.0f
 
 #define batas_error_lurus 1.0f
 
@@ -579,18 +580,15 @@ int main(void)
             // Tujuan: Mundur sampai jarak tertentu
             if (sensor_a < jarak_stop_depan || sensor_b < jarak_stop_depan) {
                 // Masih terlalu dekat, lanjutkan mundur
-
-            	//Delay biar ga langsung mundur setelah mentok (UNVERIFIED)
-            	HAL_Delay(2000);
                 Motor_Reverse(kecepatan_motor);
             } else {
                 // Target tercapai, berhenti
                 Motor_Stop_All();
-                HAL_Delay(2000);
                 printf("STATE: Posisi mundur aman tercapai, lanjut putar kiri.\r\n");
+                printf("Yaw angle di-reset ke 0.\r\n");
+                yawAngle_deg = 0.0f; // RESET YAW SEBELUM PINDAH STATE
                 keadaan_robot = STATE_LINTASAN_1_PUTAR_KIRI;
-                waktu_mulai_putar_90 = HAL_GetTick();
-                yawAngle_deg = 0.0f;
+                waktu_mulai_putar_90 = HAL_GetTick(); // Mulai timer timeout untuk putaran
             }
             break;
 
@@ -629,7 +627,7 @@ int main(void)
          }
 
          // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-         if (fabs(yawAngle_deg) > 90.0f) {
+         if (fabs(yawAngle_deg) > 135.0f) {
         	 // Sudah putar 90° (meskipun belum tentu lurus)
         	 Motor_Stop_All();
         	 printf("STATE L1: Putaran 90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -644,7 +642,7 @@ int main(void)
 
          } else {
         	 // Belum 90°, lanjut putar
-        	 Motor_Rotate_Right(25);
+        	 Motor_Rotate_Left(25);
 
         	 // Debug info (setiap ~500ms untuk tidak spam)
         	 static uint32_t last_debug_print = 0;
