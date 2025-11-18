@@ -42,7 +42,7 @@ typedef enum {
 	STATE_START,
 	// Lintasan 1 (Normal)
 	STATE_LINTASAN_1_MAJU,
-	STATE_LINTASAN_1_MANUVER_DEPAN,
+	//STATE_LINTASAN_1_MANUVER_DEPAN,
 	STATE_LINTASAN_1_MUNDUR_DARI_DEPAN,
 	STATE_LINTASAN_1_PUTAR_KIRI,
 	STATE_LINTASAN_1_KOREKSI_LURUS,
@@ -89,17 +89,17 @@ typedef enum {
 
 #define batas_jauh_samping 22.0f
 #define batas_dekat_samping 18.0f
-#define kecepatan_motor 15
+#define kecepatan_motor 20
 #define delay_jalan_ms 1000
 #define delay_berhenti_ms 1000
 #define take_photo_ms 1000
 
-#define otw_mentok_depan 10.0f
+#define otw_mentok_depan 20.0f
 #define otw_mentok_belakang 10.0f
 
 #define batas_error_lurus 1.0f
 
-#define jarak_stop_depan 20.0f //jarak robot mundur setelah mentok
+#define jarak_stop_depan 35.0f //jarak robot mundur setelah mentok
 #define jarak_stop_belakang 30.0f //jarak robot mundur setelah mentok
 /* USER CODE END PD */
 
@@ -238,7 +238,7 @@ int main(void)
 
   printf("SYSTEM READY - CONTINUOUS FORWARD MODE\r\n");
   printf("Sensor settling complete.\r\n");
-  HAL_Delay(100);
+  HAL_Delay(2000);
 
   /* USER CODE END 2 */
 
@@ -250,28 +250,30 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	#define DIAGNOSTIC_MODE 0  // Set to 1 for motor test, 0 for normal operation
+	#define DIAGNOSTIC_MODE 1 // Set to 1 for motor test, 0 for normal operation
 
 	#if DIAGNOSTIC_MODE == 1
-	  // ========================================================================
-	      // LANGKAH 1: BACA SEMUA SENSOR (SETIAP SAAT)
-	      // ========================================================================
-	      HC_SR04_Trigger_All();
-	      HAL_Delay(50); // Beri waktu untuk proses echo (interrupt akan menangkapnya)
+	  //Motor_Reverse(30);
 
-	      float sensor_a = HC_SR04_Calculate_Distance(&sensors[0]); // Depan Kanan
-	      float sensor_b = HC_SR04_Calculate_Distance(&sensors[1]); // Depan Kiri
-	      //float sensor_c = HC_SR04_Calculate_Distance(&sensors[2]); // Samping Kiri Depan
-	      //float sensor_d = HC_SR04_Calculate_Distance(&sensors[3]); // Samping Kiri Belakang
-	      float sensor_e = HC_SR04_Calculate_Distance(&sensors[4]); // Belakang Kiri
-	      float sensor_f = HC_SR04_Calculate_Distance(&sensors[5]); // Belakang Kanan
-	      float sensor_g = HC_SR04_Calculate_Distance(&sensors[6]); // Samping Kanan Belakang
-	      float sensor_h = HC_SR04_Calculate_Distance(&sensors[7]); // Samping Kanan Depan
+//	  HC_SR04_Trigger_All();
+//	      HAL_Delay(50); // Beri waktu untuk proses echo (interrupt akan menangkapnya)
+//
+//	      float sensor_a = HC_SR04_Calculate_Distance(&sensors[0]); // Depan Kanan
+//	      float sensor_b = HC_SR04_Calculate_Distance(&sensors[1]); // Depan Kiri
+//	      float sensor_c = HC_SR04_Calculate_Distance(&sensors[2]); // Samping Kiri Depan
+//	      float sensor_d = HC_SR04_Calculate_Distance(&sensors[3]); // Samping Kiri Belakang
+//	      float sensor_e = HC_SR04_Calculate_Distance(&sensors[4]); // Belakang Kiri
+//	      float sensor_f = HC_SR04_Calculate_Distance(&sensors[5]); // Belakang Kanan
+//	      float sensor_g = HC_SR04_Calculate_Distance(&sensors[6]); // Samping Kanan Belakang
+//	      float sensor_h = HC_SR04_Calculate_Distance(&sensors[7]); // Samping Kanan Depan
+//
+//	  printf("State:%d | Dpn(A,B):%.0f,%.0f | Bkg(E,F):%.0f,%.0f | Kn(G,H):%.0f,%.0f | Kr(C,D):%.0f,%.0f\r\n " ,
+//	     		keadaan_robot, sensor_a, sensor_b, sensor_e, sensor_f, sensor_g, sensor_h, sensor_c, sensor_d);
 
-	      // ========================================================================
-	      // LANGKAH 1.5: UPDATE MPU6050 DAN YAW ANGLE
-	      // ========================================================================
-	      // 1. Hitung delta time (dt)
+
+	  //Motor_Forward(kecepatan_motor);
+
+	  // 1. Hitung delta time (dt)
 	      uint32_t currentTick = HAL_GetTick();
 	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
 	      lastTick = currentTick;
@@ -282,167 +284,12 @@ int main(void)
 	      // 3. Update yaw angle dengan integrasi gyroscope
 	      yawAngle_deg += MPU6050.Gz * dt;
 
-	  switch (keadaan_robot) {
 
-	          case STATE_START:
-	              printf("STATE: Reset Awal\r\n");
-	              Motor_Stop_All();
-	              IMU_Reset_Yaw(); // Reset yaw ke 0
-	              HAL_Delay(100);
-	              keadaan_robot = STATE_PUTAR_90; // Lanjut ke status putar 90
-	              break;
+	  printf("dt: %.4f | Gz: %.2f | Yaw: %.1f\r\n", dt, MPU6050.Gz, yawAngle_deg);
+	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
 
-	          // --- Siklus Pertama: Putar +90 ---
-	          case STATE_PUTAR_90:
-	              if (yawAngle_deg > 90.0f) { // Cek positif
-	                  Motor_Stop_All();
-	                  printf("STATE: Putar 90° SELESAI! Yaw: %.1f°\r\n", yawAngle_deg);
-	                  HAL_Delay(500);
 
-	                  // Persiapan untuk status koreksi
-	                  waktu_mulai_koreksi = HAL_GetTick();
-	                  counter_koreksi_stabil = 0;
-	                  keadaan_robot = STATE_KOREKSI_LURUS_1; // Lanjut ke koreksi
 
-	              } else {
-	                  Motor_Rotate_Right(25); // Putar kanan (positif)
-	              }
-	              break;
-
-	          case STATE_KOREKSI_LURUS_1:
-	              // Menggunakan LOGIKA ANDA, tapi transisi ke STATE_RESET_KEDUA
-
-	              // Timeout check - maksimal 5 detik
-	              if (HAL_GetTick() - waktu_mulai_koreksi > 5000) {
-	                  Motor_Stop_All();
-	                  printf("KOREKSI 1: Timeout koreksi (5 detik), paksa lanjut.\r\n");
-	                  keadaan_robot = STATE_RESET_KEDUA; // << Transisi diubah
-	                  break;
-	              }
-
-	              // Validasi sensor belakang (E & F)
-	              if ( (sensor_e > 0 && sensor_e < 50) && (sensor_f > 0 && sensor_f < 50) ) {
-	                  float selisih_belakang = fabs(sensor_e - sensor_f);
-
-	                  if (selisih_belakang > 1.0f) {
-	                      // Belum lurus, koreksi
-	                      counter_koreksi_stabil = 0;
-	                      if (sensor_e > sensor_f) {
-	                          Motor_Rotate_Left(15);
-	                          HAL_Delay(100);
-	                      } else {
-	                          Motor_Rotate_Right(15);
-	                          HAL_Delay(100);
-	                      }
-	                      Motor_Stop_All();
-	                      HAL_Delay(50); // Jeda antar koreksi
-
-	                  } else {
-	                      // Sudah cukup lurus (selisih <= 1.0cm)
-	                      counter_koreksi_stabil++;
-	                      printf("Lurus (1)! Diff:%.1f | Stabil:%d/3\r\n", selisih_belakang, counter_koreksi_stabil);
-	                      Motor_Stop_All(); // Berhenti selagi menunggu stabil
-
-	                      if (counter_koreksi_stabil >= 3) {
-	                          // SUKSES: Sudah lurus 3x
-	                          printf("STATE: Koreksi lurus (1) SELESAI!\r\n");
-	                          HAL_Delay(500);
-	                          keadaan_robot = STATE_RESET_KEDUA; // << Transisi diubah
-	                      } else {
-	                          HAL_Delay(100); // Tunggu pembacaan sensor berikutnya
-	                      }
-	                  }
-	              } else {
-	                  // Sensor tidak deteksi dinding
-	                  printf("Warning (1): Dinding belakang tidak terdeteksi. Skip koreksi.\r\n");
-	                  Motor_Stop_All();
-	                  keadaan_robot = STATE_RESET_KEDUA; // << Transisi diubah
-	              }
-	              break;
-
-	          case STATE_RESET_KEDUA:
-	              printf("STATE: Reset Kedua\r\n");
-	              Motor_Stop_All();
-	              IMU_Reset_Yaw(); // Reset yaw ke 0 lagi di posisi baru
-	              HAL_Delay(100);
-	              keadaan_robot = STATE_PUTAR_MINUS_90;
-	              break;
-
-	          // --- Siklus Kedua: Putar -90 ---
-	          case STATE_PUTAR_MINUS_90:
-	              // Yaw sekarang mulai dari 0 lagi
-	              if (yawAngle_deg < -90.0f) { // Cek negatif
-	                  Motor_Stop_All();
-	                  printf("STATE: Putar -90° SELESAI! Yaw: %.1f°\r\n", yawAngle_deg);
-	                  HAL_Delay(500);
-
-	                  // Persiapan untuk status koreksi
-	                  waktu_mulai_koreksi = HAL_GetTick();
-	                  counter_koreksi_stabil = 0;
-	                  keadaan_robot = STATE_KOREKSI_LURUS_2; // Lanjut ke koreksi
-
-	              } else {
-	                  Motor_Rotate_Left(25); // Putar kiri (negatif)
-	              }
-	              break;
-
-	          case STATE_KOREKSI_LURUS_2:
-	              // Menggunakan LOGIKA ANDA, tapi transisi ke STATE_LOOP_KEMBALI
-
-	              // Timeout check - maksimal 5 detik
-	              if (HAL_GetTick() - waktu_mulai_koreksi > 5000) {
-	                  Motor_Stop_All();
-	                  printf("KOREKSI 2: Timeout koreksi (5 detik), paksa lanjut.\r\n");
-	                  keadaan_robot = STATE_LOOP_KEMBALI; // << Transisi diubah
-	                  break;
-	              }
-
-	              // Validasi sensor belakang (E & F)
-	              if ( (sensor_e > 0 && sensor_e < 50) && (sensor_f > 0 && sensor_f < 50) ) {
-	                  float selisih_belakang = fabs(sensor_e - sensor_f);
-
-	                  if (selisih_belakang > 1.0f) {
-	                      // Belum lurus, koreksi
-	                      counter_koreksi_stabil = 0;
-	                      if (sensor_e > sensor_f) {
-	                          Motor_Rotate_Left(15);
-	                          HAL_Delay(100);
-	                      } else {
-	                          Motor_Rotate_Right(15);
-	                          HAL_Delay(100);
-	                      }
-	                      Motor_Stop_All();
-	                      HAL_Delay(50);
-
-	                  } else {
-	                      // Sudah cukup lurus
-	                      counter_koreksi_stabil++;
-	                      printf("Lurus (2)! Diff:%.1f | Stabil:%d/3\r\n", selisih_belakang, counter_koreksi_stabil);
-	                      Motor_Stop_All();
-
-	                      if (counter_koreksi_stabil >= 3) {
-	                          // SUKSES: Sudah lurus 3x
-	                          printf("STATE: Koreksi lurus (2) SELESAI!\r\n");
-	                          HAL_Delay(500);
-	                          keadaan_robot = STATE_LOOP_KEMBALI; // << Transisi diubah
-	                      } else {
-	                          HAL_Delay(100);
-	                      }
-	                  }
-	              } else {
-	                  // Sensor tidak deteksi dinding
-	                  printf("Warning (2): Dinding belakang tidak terdeteksi. Skip koreksi.\r\n");
-	                  Motor_Stop_All();
-	                  keadaan_robot = STATE_LOOP_KEMBALI; // << Transisi diubah
-	              }
-	              break;
-
-	          case STATE_LOOP_KEMBALI:
-	              printf("STATE: Siklus Selesai. Mengulang...\r\n");
-	              HAL_Delay(1000); // Jeda 1 detik sebelum mengulang
-	              keadaan_robot = STATE_START; // Kembali ke status awal
-	              break;
-	      }
 	#else
     // ========================================================================
     // LANGKAH 1: BACA SEMUA SENSOR (SETIAP SAAT)
@@ -477,7 +324,7 @@ int main(void)
     // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
     // ========================================================================
     // Kondisi Jarak
-    bool ada_halangan_depan = (sensor_a < batas_jarak_depan && sensor_a > 0) || (sensor_b < batas_jarak_depan && sensor_b > 0);
+    bool ada_halangan_depan = (sensor_a < batas_jarak_depan) && (sensor_b < batas_jarak_depan);
 
     //bool ada_halangan_belakang = (sensor_e < batas_jarak_belakang) || (sensor_f < batas_jarak_belakang);
 
@@ -497,9 +344,9 @@ int main(void)
     // ========================================================================
     // Cetak informasi penting untuk debugging di satu baris
 
-    //printf("State:%d | Dpn(A,B):%.0f,%.0f | Bkg(E,F):%.0f,%.0f | yaw: %.0f" ,
-    		//keadaan_robot, sensor_a, sensor_b, sensor_e, sensor_f, yawAngle_deg);
-    printf(" State: %d | Yaw: %.0f \r\n", keadaan_robot, yawAngle_deg);
+    printf("State:%d | Dpn(A,B):%.0f,%.0f | Bkg(E,F):%.0f,%.0f \r\n" ,
+    		keadaan_robot, sensor_a, sensor_b, sensor_e, sensor_f);
+    //printf(" State: %d | Yaw: %.0f \r\n", keadaan_robot, yawAngle_deg);
 
 
     // ========================================================================
@@ -523,7 +370,7 @@ int main(void)
             if (ada_halangan_depan) {
                 Motor_Stop_All();
                 printf("STATE: Halangan depan terdeteksi. Masuk ke manuver.\r\n");
-                keadaan_robot = STATE_LINTASAN_1_MANUVER_DEPAN;
+                keadaan_robot = STATE_LINTASAN_1_MUNDUR_DARI_DEPAN;
                 break;
             }
 
@@ -552,6 +399,10 @@ int main(void)
 
             	if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan) {
             	   Motor_Forward(kecepatan_motor);
+
+            	   //float sensor_a = HC_SR04_Calculate_Distance(&sensors[0]); // Depan Kanan
+            	   //float sensor_b = HC_SR04_Calculate_Distance(&sensors[1]); // Depan Kiri
+
             	   } else {
             	     // Target tercapai, berhenti
             	     Motor_Stop_All();
@@ -560,21 +411,23 @@ int main(void)
             }
             break;
 
-        case STATE_LINTASAN_1_MANUVER_DEPAN:
-            // Tujuan: Maju pelan sampai jarak < 2cm
-            if (sensor_a > otw_mentok_depan && sensor_b > otw_mentok_depan) {
-                // Masih jauh, lanjutkan maju pelan
-                Motor_Forward(kecepatan_motor);
-            } else {
-                // Target tercapai, berhenti
-                Motor_Stop_All();
-                HAL_Delay(1500);
-                printf("Mentok depan tercapai. Capture #1 (Depan)!\r\n");
-                HAL_Delay(take_photo_ms); // Blocking delay untuk capture
-                printf("STATE: Selesai manuver depan, lanjut mundur.\r\n");
-                keadaan_robot = STATE_LINTASAN_1_MUNDUR_DARI_DEPAN;
-            }
-            break;
+
+          //GADIPAKE
+//        case STATE_LINTASAN_1_MANUVER_DEPAN:
+//            // Tujuan: Maju pelan sampai jarak < 2cm
+//            if (sensor_a > otw_mentok_depan && sensor_b > otw_mentok_depan) {
+//                // Masih jauh, lanjutkan maju pelan
+//                Motor_Forward(kecepatan_motor);
+//            } else {
+//                // Target tercapai, berhenti
+//                Motor_Stop_All();
+//                HAL_Delay(1500);
+//                printf("Mentok depan tercapai. Capture #1 (Depan)!\r\n");
+//                HAL_Delay(take_photo_ms); // Blocking delay untuk capture
+//                printf("STATE: Selesai manuver depan, lanjut mundur.\r\n");
+//                keadaan_robot = STATE_LINTASAN_1_MUNDUR_DARI_DEPAN;
+//            }
+//            break;
 
         case STATE_LINTASAN_1_MUNDUR_DARI_DEPAN:
             // Tujuan: Mundur sampai jarak tertentu
@@ -587,8 +440,11 @@ int main(void)
                 printf("STATE: Posisi mundur aman tercapai, lanjut putar kiri.\r\n");
                 printf("Yaw angle di-reset ke 0.\r\n");
                 yawAngle_deg = 0.0f; // RESET YAW SEBELUM PINDAH STATE
+                lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
                 keadaan_robot = STATE_LINTASAN_1_PUTAR_KIRI;
                 waktu_mulai_putar_90 = HAL_GetTick(); // Mulai timer timeout untuk putaran
+
+                HAL_Delay(1500);
             }
             break;
 
@@ -616,7 +472,7 @@ int main(void)
 //            break;
 
         	// Timeout protection - maksimal 10 detik untuk putar 180
-         if (HAL_GetTick() - waktu_mulai_putar_90 > 5000) {
+         if (HAL_GetTick() - waktu_mulai_putar_90 > 10000) {
         	 Motor_Stop_All();
         	 printf("STATE L1: Timeout putar 90° (5 detik), paksa lanjut!\r\n");
         	 keadaan_robot = STATE_LINTASAN_1_KOREKSI_LURUS;
@@ -627,7 +483,7 @@ int main(void)
          }
 
          // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-         if (fabs(yawAngle_deg) > 135.0f) {
+         if (yawAngle_deg < -135.0f) {
         	 // Sudah putar 90° (meskipun belum tentu lurus)
         	 Motor_Stop_All();
         	 printf("STATE L1: Putaran 90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -638,7 +494,7 @@ int main(void)
         	 keadaan_robot = STATE_LINTASAN_1_KOREKSI_LURUS;
         	 waktu_mulai_koreksi = HAL_GetTick();
         	 counter_koreksi_stabil = 0;
-        	 waktu_mulai_putar_180 = 0;
+        	 waktu_mulai_putar_90 = 0;
 
          } else {
         	 // Belum 90°, lanjut putar
@@ -1333,7 +1189,7 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 1 */
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 83;
+  htim1.Init.Prescaler = 167;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 65535;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -1524,6 +1380,14 @@ static void MX_TIM5_Init(void)
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
   {
+
+
+
+
+
+
+
+
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
@@ -1556,7 +1420,7 @@ static void MX_TIM8_Init(void)
   /* USER CODE BEGIN TIM8_Init 1 */
   /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
-  htim8.Init.Prescaler = 83;
+  htim8.Init.Prescaler = 167;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim8.Init.Period = 65535;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
