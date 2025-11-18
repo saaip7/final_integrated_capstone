@@ -143,6 +143,7 @@ MPU6050_t MPU6050;
 float yawAngle_deg = 0.0f;
 uint32_t lastTick = 0;
 float dt = 0.0f;
+float Gz_bias = 0.0f; // Gyroscope Z-axis bias (offset)
 char uart_buf[150];
 /* USER CODE END PV */
 
@@ -228,10 +229,47 @@ int main(void)
 
   Motor_Init();
 
+  // I2C Scanner - Cek apakah MPU6050 terdeteksi
+  printf("Scanning I2C bus...\r\n");
+  uint8_t found_devices = 0;
+  for (uint8_t addr = 1; addr < 128; addr++) {
+      if (HAL_I2C_IsDeviceReady(&hi2c1, addr << 1, 1, 10) == HAL_OK) {
+          printf("Device found at address 0x%02X\r\n", addr);
+          found_devices++;
+      }
+  }
+  if (found_devices == 0) {
+      printf("ERROR: No I2C devices found! Check wiring!\r\n");
+      while(1);
+  }
+  printf("Found %d I2C device(s).\r\n\r\n", found_devices);
+  HAL_Delay(500);
+
   // Initialize MPU6050
-  MPU6050_Init(&hi2c1);
-  printf("MPU6050 initialized.\r\n");
+  uint8_t mpu_status = MPU6050_Init(&hi2c1);
+  if (mpu_status == 0) {
+      printf("MPU6050 initialized successfully.\r\n");
+  } else {
+      printf("ERROR: MPU6050 initialization FAILED!\r\n");
+      printf("Expected address 0x68, check AD0 pin (should be LOW).\r\n");
+      while(1); // Stop execution
+  }
   HAL_Delay(100);
+
+  // Kalibrasi Gyroscope Bias (robot harus DIAM!)
+  printf("Kalibrasi gyro dimulai... Jangan gerakkan robot!\r\n");
+  float Gz_sum = 0;
+  const int calibration_samples = 100;
+
+  for (int i = 0; i < calibration_samples; i++) {
+      MPU6050_Read_All(&hi2c1, &MPU6050);
+      Gz_sum += MPU6050.Gz;
+      HAL_Delay(10);
+  }
+
+  Gz_bias = Gz_sum / calibration_samples; // Store in global variable
+  printf("Kalibrasi selesai! Gz_bias = %.2f deg/s\r\n", Gz_bias);
+  HAL_Delay(500);
 
   // Initialize timing untuk yaw calculation
   lastTick = HAL_GetTick();
@@ -252,7 +290,7 @@ int main(void)
 
 	#define DIAGNOSTIC_MODE 1 // Set to 1 for motor test, 0 for normal operation
 
-	#if DIAGNOSTIC_MODE == 1
+	#if DIAGNOSTIC_MODE == 0
 	  //Motor_Reverse(30);
 
 //	  HC_SR04_Trigger_All();
@@ -281,11 +319,13 @@ int main(void)
 	      // 2. Baca data MPU6050
 	      MPU6050_Read_All(&hi2c1, &MPU6050);
 
-	      // 3. Update yaw angle dengan integrasi gyroscope
-	      yawAngle_deg += MPU6050.Gz * dt;
+	      // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
+	      float Gz_corrected = MPU6050.Gz - Gz_bias;
+	      yawAngle_deg += Gz_corrected * dt;
 
 
-	  printf("dt: %.4f | Gz: %.2f | Yaw: %.1f\r\n", dt, MPU6050.Gz, yawAngle_deg);
+	  printf("dt: %.4f | Gz_raw: %.2f | Gz_corr: %.2f | Yaw: %.1f\r\n",
+	         dt, MPU6050.Gz, Gz_corrected, yawAngle_deg);
 	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
 
 
@@ -317,8 +357,8 @@ int main(void)
     // 2. Baca data MPU6050
     MPU6050_Read_All(&hi2c1, &MPU6050);
 
-    // 3. Update yaw angle dengan integrasi gyroscope
-    yawAngle_deg += MPU6050.Gz * dt;
+    // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
+    yawAngle_deg += (MPU6050.Gz - Gz_bias) * dt;
 
     // ========================================================================
     // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
