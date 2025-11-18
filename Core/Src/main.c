@@ -477,6 +477,7 @@ int main(void)
     // ========================================================================
     // Kondisi Jarak
     bool ada_halangan_depan = (sensor_a < batas_jarak_depan && sensor_a > 0) || (sensor_b < batas_jarak_depan && sensor_b > 0);
+
     //bool ada_halangan_belakang = (sensor_e < batas_jarak_belakang) || (sensor_f < batas_jarak_belakang);
 
     // Kondisi Wall Following Kanan
@@ -522,7 +523,7 @@ int main(void)
                 Motor_Stop_All();
                 printf("STATE: Halangan depan terdeteksi. Masuk ke manuver.\r\n");
                 keadaan_robot = STATE_LINTASAN_1_MANUVER_DEPAN;
-                break; // Langsung keluar untuk iterasi berikutnya
+                break;
             }
 
             // Logika gerak 2 detik jalan, 1 detik berhenti
@@ -545,7 +546,6 @@ int main(void)
 
             // Jika sedang dalam periode gerak, lakukan wall following
             if (sedang_bergerak) {
-                // SEMENTARA DINONAKTIFKAN: Logika wall-following (geser/putar) di-comment.
                 // Kita asumsikan robot lurus dan hanya fokus pada gerak maju.
                 //Motor_Forward(kecepatan_motor);
 
@@ -556,24 +556,6 @@ int main(void)
             	     Motor_Stop_All();
             	     HAL_Delay(2000);
             	   }
-
-                /*
-                if (lurus_dgn_kanan) {
-                    if (terlalu_jauh_kanan) {
-                        motor_slide_right(kecepatan_motor);
-                    } else if (terlalu_dekat_kanan) {
-                        motor_slide_left(kecepatan_motor);
-                    } else { // Jarak pas
-                        Motor_Forward(kecepatan_motor);
-                    }
-                } else { // Jika tidak lurus, coba luruskan badan
-                    if (sensor_h > sensor_g) {
-                        Motor_Rotate_Right(kecepatan_motor);
-                    } else {
-                        Motor_Rotate_Left(kecepatan_motor);
-                    }
-                }
-                */
             }
             break;
 
@@ -613,6 +595,8 @@ int main(void)
             break;
 
         case STATE_LINTASAN_1_PUTAR_KIRI:
+
+        	//LOGIC PUTAR DENGAN SENSOR
             // Cek apakah ada dinding di belakang untuk dijadikan referensi dan apakah robot sudah lurus.
             // Sensor harus membaca > 0 (valid) dan < 50cm (dinding terdeteksi)
 //            if ( (sensor_e > 0 && sensor_f > 0 && sensor_e < 50 && sensor_f < 50) && (fabs(sensor_e - sensor_f) <= batas_error_lurus) ) {
@@ -669,6 +653,7 @@ int main(void)
         		 last_debug_print = HAL_GetTick();
         	 }
          }
+         break;
 
         case STATE_LINTASAN_1_KOREKSI_LURUS:
             // Timeout check - maksimal 5 detik untuk koreksi
@@ -1023,6 +1008,8 @@ int main(void)
         		if (HAL_GetTick() - last_debug_print > 500) {
         			printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
         			last_debug_print = HAL_GetTick();
+        		}
+        	}
         	break;
 
         case STATE_LINTASAN_3_KOREKSI_LURUS:
