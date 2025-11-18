@@ -293,6 +293,10 @@ int main(void)
 	#if DIAGNOSTIC_MODE == 0
 	  //Motor_Reverse(30);
 
+
+	  // ======= FOR SENSOR TEST =============
+
+
 //	  HC_SR04_Trigger_All();
 //	      HAL_Delay(50); // Beri waktu untuk proses echo (interrupt akan menangkapnya)
 //
@@ -309,24 +313,27 @@ int main(void)
 //	     		keadaan_robot, sensor_a, sensor_b, sensor_e, sensor_f, sensor_g, sensor_h, sensor_c, sensor_d);
 
 
-	  //Motor_Forward(kecepatan_motor);
-
-	  // 1. Hitung delta time (dt)
-	      uint32_t currentTick = HAL_GetTick();
-	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
-	      lastTick = currentTick;
-
-	      // 2. Baca data MPU6050
-	      MPU6050_Read_All(&hi2c1, &MPU6050);
-
-	      // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
-	      float Gz_corrected = MPU6050.Gz - Gz_bias;
-	      yawAngle_deg += Gz_corrected * dt;
 
 
-	  printf("dt: %.4f | Gz_raw: %.2f | Gz_corr: %.2f | Yaw: %.1f\r\n",
-	         dt, MPU6050.Gz, Gz_corrected, yawAngle_deg);
-	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
+// ================= FOR MPU TEST =============
+
+//	  	      uint32_t currentTick = HAL_GetTick();
+//	  	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
+//	  	      lastTick = currentTick;
+//
+//	  	      // 2. Baca data MPU6050
+//	  	      MPU6050_Read_All(&hi2c1, &MPU6050);
+//
+//	  	      // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
+//	  	      float Gz_corrected = MPU6050.Gz - Gz_bias;
+//	  	      yawAngle_deg += Gz_corrected * dt;
+//
+//
+//	  	  printf("dt: %.4f | Gz_raw: %.2f | Gz_corr: %.2f | Yaw: %.1f\r\n",
+//	  	         dt, MPU6050.Gz, Gz_corrected, yawAngle_deg);
+//	  	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
+
+
 
 
 
@@ -856,24 +863,6 @@ int main(void)
         			Motor_Stop_All();
         			HAL_Delay(2000);
         		}
-
-        	                /*
-        	                if (lurus_dgn_kanan) {
-        	                    if (terlalu_jauh_kanan) {
-        	                        motor_slide_right(kecepatan_motor);
-        	                    } else if (terlalu_dekat_kanan) {
-        	                        motor_slide_left(kecepatan_motor);
-        	                    } else { // Jarak pas
-        	                        Motor_Forward(kecepatan_motor);
-        	                    }
-        	                } else { // Jika tidak lurus, coba luruskan badan
-        	                    if (sensor_h > sensor_g) {
-        	                        Motor_Rotate_Right(kecepatan_motor);
-        	                    } else {
-        	                        Motor_Rotate_Left(kecepatan_motor);
-        	                    }
-        	                }
-        	                */
         	}
         	waktu_mulai_putar_neg_90 = HAL_GetTick(); // Mulai timer untuk timeout
         	yawAngle_deg = 0.0f;
