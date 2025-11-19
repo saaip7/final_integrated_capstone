@@ -1,0 +1,11 @@
+../Core/Src/modbus_master.c:21:6:ModbusMaster_Init	24	static
+../Core/Src/modbus_master.c:35:6:ModbusMaster_FlushRxBuffer	24	static
+../Core/Src/modbus_master.c:48:10:ModbusMaster_CRC16	24	static
+../Core/Src/modbus_master.c:71:13:ModbusMaster_VerifyCRC	24	static
+../Core/Src/modbus_master.c:87:12:ModbusMaster_SendFrame	24	static
+../Core/Src/modbus_master.c:108:12:ModbusMaster_ReceiveFrame	24	static
+../Core/Src/modbus_master.c:141:5:ModbusMaster_WriteSingleRegister	32	static
+../Core/Src/modbus_master.c:180:5:ModbusMaster_ReadHoldingRegisters	40	static
+../Core/Src/modbus_master.c:233:5:ModbusMaster_SendCaptureCommand	16	static
+../Core/Src/modbus_master.c:242:5:ModbusMaster_ReadStatus	24	static
+../Core/Src/modbus_master.c:252:5:ModbusMaster_WaitForCompletion	40	static

@@ -32,6 +32,7 @@
 #include "i2c.h"
 #include "math.h"
 #include "mpu6050.h"
+#include "vision_control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,7 +40,13 @@
 // Definisi setiap keadaan (state) yang mungkin untuk robot.
 // Ini menggantikan flag boolean 'orientasi_...'
 typedef enum {
+	STATE_SYSTEM_INIT, // State untuk handshake dengan ESP32
 	STATE_START,
+
+	// Capture Sequence States
+	STATE_TRIGGER_CAPTURE,
+	STATE_WAIT_FOR_CAPTURE,
+
 	// Lintasan 1 (Normal)
 	STATE_LINTASAN_1_MAJU,
 	//STATE_LINTASAN_1_MANUVER_DEPAN,
@@ -94,13 +101,12 @@ typedef enum {
 #define delay_berhenti_ms 1000
 #define take_photo_ms 1000
 
-#define otw_mentok_depan 20.0f
-#define otw_mentok_belakang 10.0f
+#define CAPTURE_TIMEOUT_MS 90000 // 90 detik timeout untuk capture
+
+#define jarak_stop_depan 20.0f //jarak robot mundur setelah mentok
+#define jarak_stop_belakang 30.0f //jarak robot mundur setelah mentok
 
 #define batas_error_lurus 1.0f
-
-#define jarak_stop_depan 35.0f //jarak robot mundur setelah mentok
-#define jarak_stop_belakang 30.0f //jarak robot mundur setelah mentok
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -108,6 +114,7 @@ typedef enum {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
@@ -118,10 +125,20 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 // Variabel utama untuk state machine
-volatile KeadaanRobot_t keadaan_robot = STATE_START;
+volatile KeadaanRobot_t keadaan_robot = STATE_SYSTEM_INIT; // Mulai dari state init
+volatile KeadaanRobot_t state_selanjutnya_setelah_capture; // Untuk menyimpan state tujuan setelah capture
+
+// Photo & Group ID counters
+uint16_t photo_counter = 1;
+uint16_t group_counter = 1;
+
+// Retry logic untuk capture yang gagal
+uint8_t capture_retry_count = 0;
+const uint8_t MAX_CAPTURE_RETRIES = 3;
 
 // Variabel untuk manuver dan timing
 bool mentok = false;
@@ -132,11 +149,14 @@ bool sedang_bergerak = false;
 uint32_t waktu_mulai_koreksi = 0;
 uint8_t counter_koreksi_stabil = 0;
 
-// Variable untuk putar 180
+// Variable untuk putaran
 uint32_t waktu_mulai_putar_180 = 0;
 uint32_t waktu_mulai_putar_90 = 0;
 uint32_t waktu_mulai_putar_neg_90 = 0;
 uint32_t waktu_mulai_putar_neg_180 = 0;
+
+// Variable untuk capture
+uint32_t waktu_mulai_capture = 0;
 
 // Variable untuk MPU6050
 MPU6050_t MPU6050;
@@ -158,12 +178,49 @@ static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_TIM12_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 // Functions now in hcsr04_sensor.c library
+
+// Button control functions (Active LOW dengan pull-up)
+uint8_t read_green_button(void);  // Returns 1 if pressed, 0 if not
+uint8_t read_red_button(void);    // Returns 1 if pressed, 0 if not
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// =================================================================
+// == BUTTON CONTROL FUNCTIONS ==
+// Active LOW buttons dengan internal pull-up (pressed = 0, not pressed = 1)
+// =================================================================
+
+// Read GREEN button (PC0)
+// Returns 1 if pressed, 0 if not pressed
+uint8_t read_green_button(void) {
+    // Active LOW: Button pressed = GPIO_PIN_RESET (0)
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET) {
+        HAL_Delay(50);  // Debounce 50ms
+        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET) {
+            return 1;  // Pressed
+        }
+    }
+    return 0;  // Not pressed
+}
+
+// Read RED button (PC2)
+// Returns 1 if pressed, 0 if not pressed
+uint8_t read_red_button(void) {
+    // Active LOW: Button pressed = GPIO_PIN_RESET (0)
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET) {
+        HAL_Delay(50);  // Debounce 50ms
+        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET) {
+            return 1;  // Pressed
+        }
+    }
+    return 0;  // Not pressed
+}
 
 // ==================== Override printf untuk UART ====================
 int _write(int file, char *ptr, int len) {
@@ -176,12 +233,6 @@ int _write(int file, char *ptr, int len) {
   * @brief  The application entry point.
   * @retval int
   */
-
-void IMU_Reset_Yaw() {
-    yawAngle_deg = 0.0f;
-    printf("IMU Yaw telah di-reset kalibrasi ke 0.\r\n");
-}
-
 int main(void)
 {
 
@@ -213,6 +264,7 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM12_Init();
   MX_I2C1_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // Initialize HC-SR04 sensor library
@@ -271,6 +323,9 @@ int main(void)
   printf("Kalibrasi selesai! Gz_bias = %.2f deg/s\r\n", Gz_bias);
   HAL_Delay(500);
 
+  // Initialize Vision Control System
+  Vision_Init(&huart3);
+
   // Initialize timing untuk yaw calculation
   lastTick = HAL_GetTick();
 
@@ -294,6 +349,10 @@ int main(void)
 	  //Motor_Reverse(30);
 
 
+	  //======= FOR TEST CAMERA =======
+	  Vision_Init(&huart3);
+
+
 	  // ======= FOR SENSOR TEST =============
 
 
@@ -315,7 +374,7 @@ int main(void)
 
 
 
-// ================= FOR MPU TEST =============
+	  	  // ================= FOR MPU TEST =============
 
 //	  	      uint32_t currentTick = HAL_GetTick();
 //	  	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
@@ -365,7 +424,8 @@ int main(void)
     MPU6050_Read_All(&hi2c1, &MPU6050);
 
     // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
-    yawAngle_deg += (MPU6050.Gz - Gz_bias) * dt;
+    float Gz_corrected = MPU6050.Gz - Gz_bias;
+    yawAngle_deg += Gz_corrected * dt;
 
     // ========================================================================
     // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
@@ -397,9 +457,53 @@ int main(void)
 
 
     // ========================================================================
+    // LANGKAH 3.5: CHECK RED BUTTON FOR EMERGENCY STOP
+    // User dapat menekan RED button kapan saja untuk end session
+    // ========================================================================
+    if (read_red_button()) {
+        printf("\r\n========================================\r\n");
+        printf("[System] RED BUTTON PRESSED! Stopping robot...\r\n");
+        printf("========================================\r\n\r\n");
+
+        Motor_Stop_All();  // Stop semua motor segera
+
+        // Send END_SESSION command to ESP32-CAM
+        Vision_End_Session();
+
+        printf("\r\n========================================\r\n");
+        printf("[System] SESSION ENDED BY USER\r\n");
+        printf("[System] Total photos captured: %d\r\n", photo_counter - 1);
+        printf("[System] Press RESET button to restart.\r\n");
+        printf("========================================\r\n\r\n");
+
+        // Infinite loop - robot stopped, requires reset
+        while(1) {
+            HAL_Delay(1000);
+        }
+    }
+
+    // ========================================================================
     // LANGKAH 4: STATE MACHINE UTAMA
     // ========================================================================
     switch (keadaan_robot) {
+		case STATE_SYSTEM_INIT:
+			printf("[System] Waiting for ESP32-CAM initialization...\r\n");
+			// Lakukan handshake dengan ESP32-CAM
+			Vision_Status_t ready_status = Vision_Is_Ready();
+			if (ready_status == VISION_OK) {
+				printf("[System] ESP32-CAM ready! Setting Group ID to %d...\r\n", group_counter);
+				if (Vision_Set_Group_ID(group_counter) == VISION_OK) {
+					printf("[System] System initialized. Starting navigation.\r\n");
+					keadaan_robot = STATE_START;
+				} else {
+					printf("[System] ERROR: Failed to set Group ID. Retrying...\r\n");
+					HAL_Delay(1000); // Retry after 1 second
+				}
+			} else {
+				// Jika belum siap, tunggu dan coba lagi
+				HAL_Delay(1000); // Tunggu 1 detik sebelum cek lagi
+			}
+			break;
         case STATE_START:
             printf("STATE: START -> LINTASAN_1_MAJU\r\n");
 
@@ -408,6 +512,99 @@ int main(void)
             waktu_terakhir_gerak = HAL_GetTick();
             sedang_bergerak = true; // Mulai dengan bergerak
             break;
+
+		case STATE_TRIGGER_CAPTURE:
+			if (capture_retry_count == 0) {
+				printf("[Capture] Starting photo #%d...\r\n", photo_counter);
+			} else {
+				printf("[Capture] Retry #%d for photo #%d...\r\n", capture_retry_count, photo_counter);
+			}
+
+			Vision_Status_t trigger_status = Vision_Start_Capture(photo_counter);
+
+			if (trigger_status == VISION_OK) {
+				waktu_mulai_capture = HAL_GetTick(); // Mulai timer timeout
+				keadaan_robot = STATE_WAIT_FOR_CAPTURE;
+			} else {
+				printf("[Capture] ERROR: Failed to trigger capture command.\r\n");
+				capture_retry_count++;
+
+				if (capture_retry_count >= MAX_CAPTURE_RETRIES) {
+					printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+					       MAX_CAPTURE_RETRIES, photo_counter);
+					photo_counter++; // Skip photo ID setelah max retries
+					capture_retry_count = 0; // Reset retry counter
+					keadaan_robot = state_selanjutnya_setelah_capture; // Lanjut navigasi
+					waktu_terakhir_gerak = HAL_GetTick();
+					sedang_bergerak = false;
+				} else {
+					printf("[Capture] Retrying in 1 second... (%d/%d)\r\n",
+					       capture_retry_count, MAX_CAPTURE_RETRIES);
+					HAL_Delay(1000); // Tunggu 1 detik sebelum retry
+					// Tetap di STATE_TRIGGER_CAPTURE untuk retry
+				}
+			}
+			break;
+
+		case STATE_WAIT_FOR_CAPTURE:
+			// Cek timeout
+			if (HAL_GetTick() - waktu_mulai_capture > CAPTURE_TIMEOUT_MS) {
+				printf("[Capture] TIMEOUT! ESP32-CAM tidak selesai dalam %d ms.\r\n", CAPTURE_TIMEOUT_MS);
+				capture_retry_count++;
+
+				if (capture_retry_count >= MAX_CAPTURE_RETRIES) {
+					printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+					       MAX_CAPTURE_RETRIES, photo_counter);
+					photo_counter++; // Skip setelah max retries
+					capture_retry_count = 0; // Reset retry counter
+					keadaan_robot = state_selanjutnya_setelah_capture;
+					waktu_terakhir_gerak = HAL_GetTick();
+					sedang_bergerak = false;
+				} else {
+					printf("[Capture] Retrying capture... (%d/%d)\r\n",
+					       capture_retry_count, MAX_CAPTURE_RETRIES);
+					keadaan_robot = STATE_TRIGGER_CAPTURE; // Retry dari awal
+				}
+				break;
+			}
+
+			// Poll status dari vision system
+			Vision_Status_t capture_status = Vision_Get_Status();
+			if (capture_status == VISION_STATUS_SUCCESS) {
+				printf("[Capture] SUCCESS! Photo #%d uploaded.\r\n", photo_counter);
+				photo_counter++; // Increment untuk foto berikutnya
+				capture_retry_count = 0; // Reset retry counter untuk foto berikutnya
+				keadaan_robot = state_selanjutnya_setelah_capture; // Lanjut ke state navigasi berikutnya
+				waktu_terakhir_gerak = HAL_GetTick();
+				sedang_bergerak = false;
+			} else if (capture_status == VISION_STATUS_ERROR) {
+				printf("[Capture] ERROR! ESP32-CAM melaporkan kegagalan.\r\n");
+				Vision_Print_Error_Code(); // Baca dan tampilkan error code detail
+				capture_retry_count++;
+
+				if (capture_retry_count >= MAX_CAPTURE_RETRIES) {
+					printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+					       MAX_CAPTURE_RETRIES, photo_counter);
+					photo_counter++; // Skip setelah max retries
+					capture_retry_count = 0; // Reset retry counter
+					keadaan_robot = state_selanjutnya_setelah_capture;
+					waktu_terakhir_gerak = HAL_GetTick();
+					sedang_bergerak = false;
+				} else {
+					printf("[Capture] Retrying capture... (%d/%d)\r\n",
+					       capture_retry_count, MAX_CAPTURE_RETRIES);
+					HAL_Delay(1000); // Tunggu 1 detik sebelum retry
+					keadaan_robot = STATE_TRIGGER_CAPTURE; // Retry dari awal
+				}
+			} else if (capture_status == VISION_ERR_COMM || capture_status == VISION_ERR_TIMEOUT) {
+				printf("[Capture] Communication error with ESP32-CAM.\r\n");
+				printf("[Recovery] Retrying status poll...\r\n");
+				HAL_Delay(200); // Tunggu dan retry
+			} else {
+				// Masih BUSY atau IDLE, tunggu saja.
+				HAL_Delay(200); // Poll setiap 200ms
+			}
+			break;
 
 
       // ======================= LINTASAN 1 ======================================
@@ -422,24 +619,23 @@ int main(void)
             }
 
             // Logika gerak 2 detik jalan, 1 detik berhenti
-            if (sedang_bergerak) {
-                if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms) {
-                    Motor_Stop_All();
-
-                    //TODO: !PLACEHOLDER CAPTURE
-                    sedang_bergerak = false;
-                    waktu_terakhir_gerak = HAL_GetTick();
-                    printf("Berhenti sejenak...\r\n");
-                }
-            } else {
-                if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
-                    sedang_bergerak = true;
-                    waktu_terakhir_gerak = HAL_GetTick();
-                    printf("Melanjutkan gerak maju...\r\n");
-                }
-            }
-
-            // Jika sedang dalam periode gerak, lakukan wall following
+                        if (sedang_bergerak) {
+                            if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms) {
+                                Motor_Stop_All();
+            
+                                // Simpan state tujuan, lalu trigger capture
+            					state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
+            					keadaan_robot = STATE_TRIGGER_CAPTURE;
+            					sedang_bergerak = false;
+            					waktu_terakhir_gerak = HAL_GetTick();
+                            }
+                        } else {
+                            if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
+                                sedang_bergerak = true;
+                                waktu_terakhir_gerak = HAL_GetTick();
+                                printf("Melanjutkan gerak maju...\r\n");
+                            }
+                        }            // Jika sedang dalam periode gerak, lakukan wall following
             if (sedang_bergerak) {
                 // Kita asumsikan robot lurus dan hanya fokus pada gerak maju.
                 //Motor_Forward(kecepatan_motor);
@@ -636,10 +832,9 @@ int main(void)
                 Motor_Stop_All();
                 printf("Mentok belakang tercapai. Capture #2 (Belakang)!\r\n");
 
-                //TODO: !PLACEHOLDER CAPTURE
-                HAL_Delay(take_photo_ms); // Jeda untuk capture masih blocking, bisa kita perbaiki nanti
-                printf("STATE: Selesai manuver belakang, lanjut maju dari belakang.\r\n");
-                keadaan_robot = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
+				// Simpan state tujuan, lalu trigger capture
+				state_selanjutnya_setelah_capture = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
+				keadaan_robot = STATE_TRIGGER_CAPTURE;
             }
             break;
 
@@ -652,13 +847,11 @@ int main(void)
                 // Sudah mencapai jarak yang diinginkan, berhenti
                 Motor_Stop_All();
 
-                //TODO: !PLACEHOLDER CAPTURE
-
-                printf("STATE: Maju dari belakang selesai, siap untuk lintasan 2.\r\n");
-                keadaan_robot = STATE_LINTASAN_2_MAJU;
-                // Reset timer untuk state berikutnya jika STATE_LINTASAN_2_MAJU menggunakan timer
-                waktu_terakhir_gerak = HAL_GetTick();
-                sedang_bergerak = true;
+                // Simpan state tujuan, lalu trigger capture
+                state_selanjutnya_setelah_capture = STATE_LINTASAN_2_MAJU;
+                keadaan_robot = STATE_TRIGGER_CAPTURE;
+				waktu_terakhir_gerak = HAL_GetTick();
+				sedang_bergerak = true;
             }
             break;
 
@@ -682,7 +875,9 @@ int main(void)
             } else {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
 
-                	//TODO: !PLACEHOLDER CAPTURE
+					// Simpan state tujuan, lalu trigger capture
+					state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
+					keadaan_robot = STATE_TRIGGER_CAPTURE;
                     sedang_bergerak = true;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Melanjutkan gerak maju (L2)...\r\n");
@@ -691,7 +886,6 @@ int main(void)
 
             // Jika sedang dalam periode gerak, maju terus
             if (sedang_bergerak) {
-                //Motor_Forward(kecepatan_motor);
             	if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan) {
             	    Motor_Forward(kecepatan_motor);
             	    } else {
@@ -712,11 +906,11 @@ int main(void)
                 printf("STATE L2: Posisi mundur aman, siap putar 180.\r\n");
 
                 // Reset yaw angle ke 0 sebelum mulai putar
-                yawAngle_deg = 0.0f;
                 printf("Yaw angle di-reset ke 0.\r\n");
+                yawAngle_deg = 0.0f;
+                lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
                 keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
                 waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout
-                yawAngle_deg = 0.0f;
             }
             break;
 
@@ -733,7 +927,7 @@ int main(void)
             }
 
             // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-            if (fabs(yawAngle_deg) > 250.0f) {
+            if (yawAngle_deg > 250.0f) {
                 // Sudah putar 180° (meskipun belum tentu lurus)
                 Motor_Stop_All();
                 printf("STATE L2: Putaran 180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -866,10 +1060,11 @@ int main(void)
         	}
         	waktu_mulai_putar_neg_90 = HAL_GetTick(); // Mulai timer untuk timeout
         	yawAngle_deg = 0.0f;
+        	lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
         	break;
 
         case STATE_LINTASAN_3_PUTAR_KANAN:
-        	if (fabs(yawAngle_deg) < -90.0f) {
+        	if (yawAngle_deg < -90.0f) {
         		// Sudah putar 180° (meskipun belum tentu lurus)
         		Motor_Stop_All();
         		printf("STATE L1: Putaran -90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -1004,6 +1199,7 @@ int main(void)
         	        	}
         	        	waktu_mulai_putar_neg_180 = HAL_GetTick(); // Mulai timer untuk timeout
         	        	yawAngle_deg = 0.0f;
+        	        	lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
              break;
 
         case STATE_LINTASAN_4_PUTAR_BALIK:
@@ -1019,7 +1215,7 @@ int main(void)
         	            }
 
         	            // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-        	            if (fabs(yawAngle_deg) < -250.0f) {
+        	            if (yawAngle_deg < -250.0f) {
         	                // Sudah putar 180° (meskipun belum tentu lurus)
         	                Motor_Stop_All();
         	                printf("STATE L4: Putaran -180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -1198,6 +1394,40 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -1397,7 +1627,7 @@ static void MX_TIM5_Init(void)
 
   /* USER CODE END TIM5_Init 1 */
   htim5.Instance = TIM5;
-  htim5.Init.Prescaler = 15;
+  htim5.Init.Prescaler = 83;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim5.Init.Period = 4294967295;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -1409,14 +1639,6 @@ static void MX_TIM5_Init(void)
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
   {
-
-
-
-
-
-
-
-
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
@@ -1622,6 +1844,39 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -1634,11 +1889,14 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_0|GPIO_PIN_2, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, Trig_1_Pin|Trig_2_Pin|Trig_3_Pin, GPIO_PIN_RESET);
@@ -1648,6 +1906,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Trig_4_GPIO_Port, Trig_4_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PC13 PC0 PC2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_0|GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Trig_1_Pin Trig_2_Pin Trig_3_Pin */
   GPIO_InitStruct.Pin = Trig_1_Pin|Trig_2_Pin|Trig_3_Pin;
@@ -1671,6 +1936,12 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(Trig_4_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /*Configure GPIO pins : PC0 (GREEN BUTTON) and PC2 (RED BUTTON) */
+  // Active LOW dengan internal pull-up
+  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
