@@ -4,3 +4,4 @@
 ../Core/Src/vision_control.c:61:17:Vision_Start_Capture	3
 ../Core/Src/vision_control.c:85:17:Vision_Get_Status	7
 ../Core/Src/vision_control.c:116:6:Vision_Print_Error_Code	8
+../Core/Src/vision_control.c:144:17:Vision_End_Session	2

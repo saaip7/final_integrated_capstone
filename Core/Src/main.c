@@ -114,7 +114,7 @@ typedef enum {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
+//I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
@@ -178,7 +178,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_TIM12_Init(void);
-static void MX_I2C1_Init(void);
+void MX_I2C1_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 // Functions now in hcsr04_sensor.c library
@@ -343,14 +343,14 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	#define DIAGNOSTIC_MODE 1 // Set to 1 for motor test, 0 for normal operation
+	#define DIAGNOSTIC_MODE 0 // Set to 1 for motor test, 0 for normal operation
 
 	#if DIAGNOSTIC_MODE == 0
-	  //Motor_Reverse(30);
+	  Motor_Reverse(30);
 
 
 	  //======= FOR TEST CAMERA =======
-	  Vision_Init(&huart3);
+	  //Vision_Init(&huart3);
 
 
 	  // ======= FOR SENSOR TEST =============
@@ -1396,6 +1396,7 @@ void SystemClock_Config(void)
   }
 }
 
+#if 0
 /**
   * @brief I2C1 Initialization Function
   * @param None
@@ -1429,6 +1430,7 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 2 */
 
 }
+#endif
 
 /**
   * @brief TIM1 Initialization Function
