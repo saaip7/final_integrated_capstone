@@ -629,7 +629,7 @@ int main(void)
         case STATE_START:
             printf("STATE: START -> LINTASAN_1_MAJU\r\n");
 
-            //FLAGF
+            //FLAG-S
             keadaan_robot = STATE_LINTASAN_1_MAJU;
             waktu_terakhir_gerak = HAL_GetTick();
             sedang_bergerak = true; // Mulai dengan bergerak
@@ -1028,6 +1028,7 @@ int main(void)
                 yawAngle_deg = 0.0f;
                 lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
 
+                //FLAG minimum track
                 keadaan_robot = STATE_ERROR;
                 //keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
                 waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout
