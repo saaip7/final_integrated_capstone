@@ -103,7 +103,7 @@ typedef enum {
 
 #define CAPTURE_TIMEOUT_MS 90000 // 90 detik timeout untuk capture
 
-#define jarak_stop_depan 20.0f //jarak robot mundur setelah mentok
+#define jarak_stop_depan 15.0f //jarak robot mundur setelah mentok
 #define jarak_stop_belakang 30.0f //jarak robot mundur setelah mentok
 
 #define batas_error_lurus 1.0f
@@ -139,6 +139,9 @@ uint16_t group_counter = 1;
 // Retry logic untuk capture yang gagal
 uint8_t capture_retry_count = 0;
 const uint8_t MAX_CAPTURE_RETRIES = 3;
+
+// System start control - GREEN button trigger
+bool system_started = false;
 
 // Variabel untuk manuver dan timing
 bool mentok = false;
@@ -381,9 +384,13 @@ int main(void)
   // Initialize timing untuk yaw calculation
   lastTick = HAL_GetTick();
 
-  printf("SYSTEM READY - CONTINUOUS FORWARD MODE\r\n");
-  printf("Sensor settling complete.\r\n");
-  HAL_Delay(2000);
+  printf("\r\n========================================\r\n");
+  printf("SYSTEM READY!\r\n");
+  printf("All sensors initialized successfully.\r\n");
+  printf("========================================\r\n");
+  printf("Press GREEN BUTTON to start operation...\r\n");
+  printf("(Press RED BUTTON anytime to stop)\r\n");
+  printf("========================================\r\n\r\n");
 
   /* USER CODE END 2 */
 
@@ -396,19 +403,20 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	 //FLAGD
-	#define DIAGNOSTIC_MODE 1 // Set to 1 for motor test, 0 for normal operation
+	#define DIAGNOSTIC_MODE 1 // Set to 1 for normal operation, 0 for commented test code
 
+	  //yawAngle_deg = 0;
 	#if DIAGNOSTIC_MODE == 0
 	  //Motor_Reverse(30);
 
 	  // DIAGNOSTIC MODE: Test Buzzer
 	      // ========================================================================
-	      printf("=== DIAGNOSTIC MODE ACTIVE ===\r\n");
-	      printf("Testing buzzer on PC13...\r\n");
-	      printf("Pattern: 3 long beeps, then continuous fast beeps\r\n");
-	      printf("Press RESET button to stop.\r\n\r\n");
-	      HAL_Delay(2000);
-	      buzzer_error_alert();  // This will loop forever
+//	      printf("=== DIAGNOSTIC MODE ACTIVE ===\r\n");
+//	      printf("Testing buzzer on PC13...\r\n");
+//	      printf("Pattern: 3 long beeps, then continuous fast beeps\r\n");
+//	      printf("Press RESET button to stop.\r\n\r\n");
+//	      HAL_Delay(2000);
+//	      buzzer_error_alert();  // This will loop forever
 
 
 
@@ -440,22 +448,29 @@ int main(void)
 
 	  	  // ================= FOR MPU TEST =============
 
-//	  	      uint32_t currentTick = HAL_GetTick();
-//	  	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
-//	  	      lastTick = currentTick;
-//
-//	  	      // 2. Baca data MPU6050
-//	  	      MPU6050_Read_All(&hi2c1, &MPU6050);
-//
-//	  	      // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
-//	  	      float Gz_corrected = MPU6050.Gz - Gz_bias;
-//	  	      yawAngle_deg += Gz_corrected * dt;
-//
-//
-//	  	  printf("dt: %.4f | Gz_raw: %.2f | Gz_corr: %.2f | Yaw: %.1f\r\n",
-//	  	         dt, MPU6050.Gz, Gz_corrected, yawAngle_deg);
-//	  	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
+	  	      uint32_t currentTick = HAL_GetTick();
+	  	      dt = (float)(currentTick - lastTick) / 1000.0f; // Konversi ke detik
+	  	      lastTick = currentTick;
 
+	  	      // 2. Baca data MPU6050
+	  	      MPU6050_Read_All(&hi2c1, &MPU6050);
+
+	  	      // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
+	  	      float Gz_corrected = MPU6050.Gz - Gz_bias;
+	  	      yawAngle_deg += Gz_corrected * dt;
+
+
+	  	  printf("dt: %.4f | Gz_raw: %.2f | Gz_corr: %.2f | Yaw: %.1f\r\n",
+	  	         dt, MPU6050.Gz, Gz_corrected, yawAngle_deg);
+	  	  HAL_Delay(100); // Tambahkan delay untuk stabilitas
+
+
+
+
+	  	  Motor_Rotate_Right(35);
+	  	  if(yawAngle_deg < -180.0f){
+	  		  Motor_Stop_All();
+	  	  }
 
 
 
@@ -491,6 +506,26 @@ int main(void)
     // 3. Update yaw angle dengan integrasi gyroscope (DENGAN BIAS CORRECTION!)
     float Gz_corrected = MPU6050.Gz - Gz_bias;
     yawAngle_deg += Gz_corrected * dt;
+
+    // ========================================================================
+    // LANGKAH 1.7: CHECK GREEN BUTTON TO START OPERATION
+    // System harus menunggu GREEN button ditekan setelah inisialisasi sebelum mulai beroperasi
+    // ========================================================================
+    if (!system_started) {
+        // System belum dimulai, tunggu GREEN button press
+        if (read_green_button()) {
+            printf("\r\n========================================\r\n");
+            printf("[System] GREEN BUTTON PRESSED!\r\n");
+            printf("[System] Starting autonomous operation...\r\n");
+            printf("========================================\r\n\r\n");
+            system_started = true;
+            HAL_Delay(500);  // Debounce delay
+        } else {
+            // Belum ditekan, skip rest of loop dan tunggu
+            HAL_Delay(100);  // Small delay to prevent busy loop
+            continue;  // Skip ke iterasi berikutnya (tidak proses sensor, tidak printf spam)
+        }
+    }
 
     // ========================================================================
     // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
@@ -572,8 +607,8 @@ int main(void)
         case STATE_START:
             printf("STATE: START -> LINTASAN_1_MAJU\r\n");
 
-            //test langsung ke lintasan 2
-            keadaan_robot = STATE_LINTASAN_1_MAJU;
+            //FLAGF
+            keadaan_robot = STATE_LINTASAN_2_MAJU;
             waktu_terakhir_gerak = HAL_GetTick();
             sedang_bergerak = true; // Mulai dengan bergerak
             break;
@@ -791,7 +826,7 @@ int main(void)
          }
 
          // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-         if (yawAngle_deg < -135.0f) {
+         if (yawAngle_deg > 90.0f) {
         	 // Sudah putar 90° (meskipun belum tentu lurus)
         	 Motor_Stop_All();
         	 printf("STATE L1: Putaran 90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
@@ -921,7 +956,7 @@ int main(void)
             break;
 
         case STATE_LINTASAN_2_MAJU:
-            // Logika maju sama persis dengan Lintasan 1
+            // Cek kondisi transisi state: jika ada halangan di depan
             if (ada_halangan_depan) {
                 Motor_Stop_All();
                 printf("STATE L2: Halangan depan terdeteksi. Mundur sedikit.\r\n");
@@ -933,32 +968,30 @@ int main(void)
             if (sedang_bergerak) {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms) {
                     Motor_Stop_All();
+
+                    // Simpan state tujuan, lalu trigger capture
+                    state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
+                    keadaan_robot = STATE_TRIGGER_CAPTURE;
                     sedang_bergerak = false;
                     waktu_terakhir_gerak = HAL_GetTick();
-                    printf("Berhenti sejenak (L2)...\r\n");
                 }
             } else {
                 if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms) {
-
-					// Simpan state tujuan, lalu trigger capture
-					state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
-					keadaan_robot = STATE_TRIGGER_CAPTURE;
                     sedang_bergerak = true;
                     waktu_terakhir_gerak = HAL_GetTick();
                     printf("Melanjutkan gerak maju (L2)...\r\n");
                 }
             }
 
-            // Jika sedang dalam periode gerak, maju terus
+            // Jika sedang dalam periode gerak, lakukan wall following
             if (sedang_bergerak) {
             	if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan) {
-            	    Motor_Forward(kecepatan_motor);
-            	    } else {
-            	    // Target tercapai, berhenti
-            	      Motor_Stop_All();
-            	      HAL_Delay(2000);
-            	    }
-
+            	   Motor_Forward(kecepatan_motor);
+            	} else {
+            	   // Target tercapai, berhenti
+            	   Motor_Stop_All();
+            	   HAL_Delay(2000);
+            	}
             }
             break;
 
@@ -974,14 +1007,14 @@ int main(void)
                 printf("Yaw angle di-reset ke 0.\r\n");
                 yawAngle_deg = 0.0f;
                 lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
-                keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
+                //keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
                 waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout
             }
             break;
 
         case STATE_LINTASAN_2_PUTAR_BALIK:
             // Timeout protection - maksimal 10 detik untuk putar 180
-            if (HAL_GetTick() - waktu_mulai_putar_180 > 5000) {
+            if (HAL_GetTick() - waktu_mulai_putar_180 > 10000) {
                 Motor_Stop_All();
                 printf("STATE L2: Timeout putar 180° (10 detik), paksa lanjut!\r\n");
                 keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS;
@@ -992,7 +1025,7 @@ int main(void)
             }
 
             // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
-            if (yawAngle_deg > 250.0f) {
+            if (yawAngle_deg < -180.0f) {
                 // Sudah putar 180° (meskipun belum tentu lurus)
                 Motor_Stop_All();
                 printf("STATE L2: Putaran 180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
