@@ -91,12 +91,12 @@ typedef enum {
 /* USER CODE BEGIN PD */
 // Konstanta untuk parameter gerak dan sensor
 #define batas_jarak_depan 20.0f //jarak robot dengan dinding untuk sensor depan
-#define batas_jarak_belakang 30.0f //jarak robot dengan dingding untuk sensor belakang
+#define batas_jarak_belakang 15.0f //jarak robot dengan dingding untuk sensor belakang
 
 
 #define batas_jauh_samping 22.0f
 #define batas_dekat_samping 18.0f
-#define kecepatan_motor 20
+#define kecepatan_motor 23
 #define delay_jalan_ms 1000
 #define delay_berhenti_ms 1000
 #define take_photo_ms 1000
@@ -226,8 +226,8 @@ uint8_t read_red_button(void) {
 }
 
 // =================================================================
-// == BUZZER ERROR ALERT ==
-// Beep buzzer on PC13 to alert user of critical error
+// == BUZZER ERROR ALERT (I2C/Critical Hardware Error) ==
+// Pattern: 3 LONG beeps → continuous FAST beeps
 // =================================================================
 void buzzer_error_alert(void) {
     // Beep pattern: 3 long beeps (500ms ON, 500ms OFF)
@@ -238,12 +238,34 @@ void buzzer_error_alert(void) {
         HAL_Delay(500);
     }
 
-    // Continuous beep to indicate error persists
+    // Continuous fast beep to indicate error persists
     while(1) {
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);   // Buzzer ON
         HAL_Delay(200);
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
         HAL_Delay(200);
+    }
+}
+
+// =================================================================
+// == BUZZER STATE ERROR ALERT ==
+// Pattern: 5 SHORT beeps → continuous SLOW beeps
+// =================================================================
+void buzzer_state_error_alert(void) {
+    // Beep pattern: 5 short beeps (200ms ON, 200ms OFF)
+    for (int i = 0; i < 5; i++) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);   // Buzzer ON
+        HAL_Delay(200);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+        HAL_Delay(200);
+    }
+
+    // Continuous slow beep to indicate state error persists
+    while(1) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);   // Buzzer ON
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+        HAL_Delay(500);
     }
 }
 
@@ -608,7 +630,7 @@ int main(void)
             printf("STATE: START -> LINTASAN_1_MAJU\r\n");
 
             //FLAGF
-            keadaan_robot = STATE_LINTASAN_2_MAJU;
+            keadaan_robot = STATE_LINTASAN_1_MAJU;
             waktu_terakhir_gerak = HAL_GetTick();
             sedang_bergerak = true; // Mulai dengan bergerak
             break;
@@ -743,8 +765,6 @@ int main(void)
             	if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan) {
             	   Motor_Forward(kecepatan_motor);
 
-            	   //float sensor_a = HC_SR04_Calculate_Distance(&sensors[0]); // Depan Kanan
-            	   //float sensor_b = HC_SR04_Calculate_Distance(&sensors[1]); // Depan Kiri
 
             	   } else {
             	     // Target tercapai, berhenti
@@ -841,7 +861,7 @@ int main(void)
 
          } else {
         	 // Belum 90°, lanjut putar
-        	 Motor_Rotate_Left(25);
+        	 Motor_Rotate_Left(30);
 
         	 // Debug info (setiap ~500ms untuk tidak spam)
         	 static uint32_t last_debug_print = 0;
@@ -1007,6 +1027,8 @@ int main(void)
                 printf("Yaw angle di-reset ke 0.\r\n");
                 yawAngle_deg = 0.0f;
                 lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
+
+                keadaan_robot = STATE_ERROR;
                 //keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
                 waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout
             }
@@ -1432,8 +1454,18 @@ int main(void)
             break;
 
         case STATE_ERROR:
-            printf("STATE: ERROR! Robot berhenti.\r\n");
+            printf("\r\n========================================\r\n");
+            printf("CRITICAL ERROR: Robot entered ERROR state!\r\n");
+            printf("========================================\r\n");
+            printf("Stopping all motors...\r\n");
+            printf("Activating STATE ERROR buzzer alert...\r\n");
+            printf("Pattern: 5 short beeps → continuous slow beeps\r\n");
+            printf("Press RESET button to restart.\r\n");
+            printf("========================================\r\n\r\n");
+
             Motor_Stop_All();
+            HAL_Delay(1000);  // Wait 1 second before buzzer
+            buzzer_state_error_alert();  // Activate buzzer (infinite loop)
             break;
 
         default:
