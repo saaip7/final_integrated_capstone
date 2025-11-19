@@ -222,6 +222,28 @@ uint8_t read_red_button(void) {
     return 0;  // Not pressed
 }
 
+// =================================================================
+// == BUZZER ERROR ALERT ==
+// Beep buzzer on PC13 to alert user of critical error
+// =================================================================
+void buzzer_error_alert(void) {
+    // Beep pattern: 3 long beeps (500ms ON, 500ms OFF)
+    for (int i = 0; i < 3; i++) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);   // Buzzer ON
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+        HAL_Delay(500);
+    }
+
+    // Continuous beep to indicate error persists
+    while(1) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);   // Buzzer ON
+        HAL_Delay(200);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+        HAL_Delay(200);
+    }
+}
+
 // ==================== Override printf untuk UART ====================
 int _write(int file, char *ptr, int len) {
     HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, HAL_MAX_DELAY);
@@ -281,30 +303,60 @@ int main(void)
 
   Motor_Init();
 
-  // I2C Scanner - Cek apakah MPU6050 terdeteksi
+  // I2C Scanner dengan retry logic
   printf("Scanning I2C bus...\r\n");
+  const uint8_t I2C_SCAN_MAX_RETRIES = 3;
   uint8_t found_devices = 0;
-  for (uint8_t addr = 1; addr < 128; addr++) {
-      if (HAL_I2C_IsDeviceReady(&hi2c1, addr << 1, 1, 10) == HAL_OK) {
-          printf("Device found at address 0x%02X\r\n", addr);
-          found_devices++;
+  uint8_t scan_retry_count = 0;
+
+  for (scan_retry_count = 0; scan_retry_count < I2C_SCAN_MAX_RETRIES; scan_retry_count++) {
+      if (scan_retry_count > 0) {
+          printf("I2C scan attempt #%d/%d...\r\n", scan_retry_count + 1, I2C_SCAN_MAX_RETRIES);
+      }
+
+      found_devices = 0; // Reset counter for each retry
+      for (uint8_t addr = 1; addr < 128; addr++) {
+          if (HAL_I2C_IsDeviceReady(&hi2c1, addr << 1, 1, 10) == HAL_OK) {
+              printf("Device found at address 0x%02X\r\n", addr);
+              found_devices++;
+          }
+      }
+
+      if (found_devices > 0) {
+          printf("Found %d I2C device(s) on attempt #%d.\r\n\r\n", found_devices, scan_retry_count + 1);
+          break; // Success, exit retry loop
+      } else {
+          printf("No I2C devices found (attempt #%d/%d).\r\n", scan_retry_count + 1, I2C_SCAN_MAX_RETRIES);
+          HAL_Delay(500); // Wait before retry
       }
   }
+
+  // Check if scan failed after all retries
   if (found_devices == 0) {
-      printf("ERROR: No I2C devices found! Check wiring!\r\n");
-      while(1);
+      printf("\r\n========================================\r\n");
+      printf("CRITICAL ERROR: I2C SCAN FAILED!\r\n");
+      printf("No devices found after %d attempts.\r\n", I2C_SCAN_MAX_RETRIES);
+      printf("Check: I2C connections (SCL=PB6, SDA=PB7)\r\n");
+      printf("Check: MPU6050 power supply\r\n");
+      printf("Check: Pull-up resistors (4.7k on SCL/SDA)\r\n");
+      printf("========================================\r\n");
+      printf("BUZZER ALERT ACTIVATED!\r\n");
+      printf("Press RESET button to retry.\r\n");
+      printf("========================================\r\n\r\n");
+
+      buzzer_error_alert(); // Activate buzzer and halt
   }
-  printf("Found %d I2C device(s).\r\n\r\n", found_devices);
   HAL_Delay(500);
 
-  // Initialize MPU6050
+  // Initialize MPU6050 (single try - I2C scan already verified device exists)
+  printf("Initializing MPU6050...\r\n");
   uint8_t mpu_status = MPU6050_Init(&hi2c1);
   if (mpu_status == 0) {
       printf("MPU6050 initialized successfully.\r\n");
   } else {
       printf("ERROR: MPU6050 initialization FAILED!\r\n");
       printf("Expected address 0x68, check AD0 pin (should be LOW).\r\n");
-      while(1); // Stop execution
+      while(1); // Stop execution (I2C scan passed, so this is MPU-specific issue)
   }
   HAL_Delay(100);
 
@@ -343,10 +395,22 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	#define DIAGNOSTIC_MODE 0 // Set to 1 for motor test, 0 for normal operation
+	 //FLAGD
+	#define DIAGNOSTIC_MODE 1 // Set to 1 for motor test, 0 for normal operation
 
 	#if DIAGNOSTIC_MODE == 0
-	  Motor_Reverse(30);
+	  //Motor_Reverse(30);
+
+	  // DIAGNOSTIC MODE: Test Buzzer
+	      // ========================================================================
+	      printf("=== DIAGNOSTIC MODE ACTIVE ===\r\n");
+	      printf("Testing buzzer on PC13...\r\n");
+	      printf("Pattern: 3 long beeps, then continuous fast beeps\r\n");
+	      printf("Press RESET button to stop.\r\n\r\n");
+	      HAL_Delay(2000);
+	      buzzer_error_alert();  // This will loop forever
+
+
 
 
 	  //======= FOR TEST CAMERA =======
@@ -397,6 +461,7 @@ int main(void)
 
 
 	#else
+
     // ========================================================================
     // LANGKAH 1: BACA SEMUA SENSOR (SETIAP SAAT)
     // ========================================================================
@@ -1944,6 +2009,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC13 (BUZZER/LED indicator) */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  // Set PC13 initial state to OFF
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
