@@ -125,6 +125,7 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;  // ESP-01 WiFi Serial Bridge (esp-link)
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
@@ -177,6 +178,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_USART2_UART_Init(void);  // ESP-01 WiFi Serial Bridge
 static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM9_Init(void);
@@ -282,9 +284,12 @@ void buzzer_state_error_alert(void)
 }
 
 // ==================== Override printf untuk UART ====================
+// Dual output: USB-TTL debug (UART1) + WiFi esp-link (UART2)
 int _write(int file, char *ptr, int len)
 {
-  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
+  (void)file; // Unused parameter
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 100); // USB-TTL debug (115200 baud)
+  HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 100); // WiFi esp-link (115200 baud)
   return len;
 }
 /* USER CODE END 0 */
@@ -319,6 +324,7 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();  // ESP-01 WiFi Serial Bridge (esp-link)
   MX_TIM3_Init();
   MX_TIM5_Init();
   MX_TIM9_Init();
@@ -435,6 +441,11 @@ int main(void)
   printf("\r\n========================================\r\n");
   printf("SYSTEM READY!\r\n");
   printf("All sensors initialized successfully.\r\n");
+  printf("========================================\r\n");
+  printf("WiFi Serial Monitor: ACTIVE (UART2)\r\n");
+  printf("  - ESP-01 esp-link firmware required\r\n");
+  printf("  - Access via: http://<esp-link-IP>\r\n");
+  printf("  - Telnet: telnet <esp-link-IP> 23\r\n");
   printf("========================================\r\n");
   printf("Press GREEN BUTTON to start operation...\r\n");
   printf("(Press RED BUTTON anytime to stop)\r\n");
@@ -2277,6 +2288,34 @@ static void MX_USART1_UART_Init(void)
   }
   /* USER CODE BEGIN USART1_Init 2 */
   /* USER CODE END USART1_Init 2 */
+}
+
+/**
+ * @brief USART2 Initialization Function (ESP-01 WiFi Bridge)
+ * @param None
+ * @retval None
+ */
+static void MX_USART2_UART_Init(void)
+{
+  /* USER CODE BEGIN USART2_Init 0 */
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 }
 
 /**
