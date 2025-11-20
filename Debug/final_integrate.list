@@ -29,9 +29,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  12 .ARM.attributes 00000030  00000000  00000000  00011264  2**0
                   CONTENTS, READONLY
+<<<<<<< HEAD
  13 .debug_info   000134fe  00000000  00000000  00011294  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_abbrev 00002b09  00000000  00000000  00024792  2**0
+=======
+ 13 .debug_info   00014ac4  00000000  00000000  0001329c  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 14 .debug_abbrev 00002fa6  00000000  00000000  00027d60  2**0
+>>>>>>> test-integration
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_aranges 00001198  00000000  00000000  000272a0  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -39,6 +45,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  00004201  00000000  00000000  0002927a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
+<<<<<<< HEAD
  18 .debug_line   0001766e  00000000  00000000  0002d47b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  19 .debug_str    000d10f3  00000000  00000000  00044ae9  2**0
@@ -48,6 +55,17 @@ Idx Name          Size      VMA       LMA       File off  Algn
  21 .debug_frame  00006188  00000000  00000000  00115c20  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  22 .debug_line_str 0000004b  00000000  00000000  0011bda8  2**0
+=======
+ 18 .debug_line   00019387  00000000  00000000  000316fb  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 19 .debug_str    000d1875  00000000  00000000  0004aa82  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 20 .comment      00000043  00000000  00000000  0011c2f7  2**0
+                  CONTENTS, READONLY
+ 21 .debug_frame  000064b8  00000000  00000000  0011c33c  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 22 .debug_line_str 0000004b  00000000  00000000  001227f4  2**0
+>>>>>>> test-integration
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2803,6 +2821,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
  8001a6c:	40023800 	.word	0x40023800
  8001a70:	40020400 	.word	0x40020400
 
+<<<<<<< HEAD
 08001a74 <_write>:
 
 /* Private user code ---------------------------------------------------------*/
@@ -2825,6 +2844,241 @@ int _write(int file, char *ptr, int len) {
  8001a8c:	f006 ffa2 	bl	80089d4 <HAL_UART_Transmit>
     return len;
  8001a90:	687b      	ldr	r3, [r7, #4]
+=======
+08001a74 <read_green_button>:
+// =================================================================
+
+// Read GREEN button (PC0)
+// Returns 1 if pressed, 0 if not pressed
+uint8_t read_green_button(void)
+{
+ 8001a74:	b580      	push	{r7, lr}
+ 8001a76:	af00      	add	r7, sp, #0
+  // Active LOW: Button pressed = GPIO_PIN_RESET (0)
+  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET)
+ 8001a78:	2101      	movs	r1, #1
+ 8001a7a:	480a      	ldr	r0, [pc, #40]	@ (8001aa4 <read_green_button+0x30>)
+ 8001a7c:	f004 feda 	bl	8006834 <HAL_GPIO_ReadPin>
+ 8001a80:	4603      	mov	r3, r0
+ 8001a82:	2b00      	cmp	r3, #0
+ 8001a84:	d10b      	bne.n	8001a9e <read_green_button+0x2a>
+  {
+    HAL_Delay(50); // Debounce 50ms
+ 8001a86:	2032      	movs	r0, #50	@ 0x32
+ 8001a88:	f004 fb70 	bl	800616c <HAL_Delay>
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET)
+ 8001a8c:	2101      	movs	r1, #1
+ 8001a8e:	4805      	ldr	r0, [pc, #20]	@ (8001aa4 <read_green_button+0x30>)
+ 8001a90:	f004 fed0 	bl	8006834 <HAL_GPIO_ReadPin>
+ 8001a94:	4603      	mov	r3, r0
+ 8001a96:	2b00      	cmp	r3, #0
+ 8001a98:	d101      	bne.n	8001a9e <read_green_button+0x2a>
+    {
+      return 1; // Pressed
+ 8001a9a:	2301      	movs	r3, #1
+ 8001a9c:	e000      	b.n	8001aa0 <read_green_button+0x2c>
+    }
+  }
+  return 0; // Not pressed
+ 8001a9e:	2300      	movs	r3, #0
+}
+ 8001aa0:	4618      	mov	r0, r3
+ 8001aa2:	bd80      	pop	{r7, pc}
+ 8001aa4:	40020800 	.word	0x40020800
+
+08001aa8 <read_red_button>:
+
+// Read RED button (PC2)
+// Returns 1 if pressed, 0 if not pressed
+uint8_t read_red_button(void)
+{
+ 8001aa8:	b580      	push	{r7, lr}
+ 8001aaa:	af00      	add	r7, sp, #0
+  // Active LOW: Button pressed = GPIO_PIN_RESET (0)
+  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET)
+ 8001aac:	2104      	movs	r1, #4
+ 8001aae:	480a      	ldr	r0, [pc, #40]	@ (8001ad8 <read_red_button+0x30>)
+ 8001ab0:	f004 fec0 	bl	8006834 <HAL_GPIO_ReadPin>
+ 8001ab4:	4603      	mov	r3, r0
+ 8001ab6:	2b00      	cmp	r3, #0
+ 8001ab8:	d10b      	bne.n	8001ad2 <read_red_button+0x2a>
+  {
+    HAL_Delay(50); // Debounce 50ms
+ 8001aba:	2032      	movs	r0, #50	@ 0x32
+ 8001abc:	f004 fb56 	bl	800616c <HAL_Delay>
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET)
+ 8001ac0:	2104      	movs	r1, #4
+ 8001ac2:	4805      	ldr	r0, [pc, #20]	@ (8001ad8 <read_red_button+0x30>)
+ 8001ac4:	f004 feb6 	bl	8006834 <HAL_GPIO_ReadPin>
+ 8001ac8:	4603      	mov	r3, r0
+ 8001aca:	2b00      	cmp	r3, #0
+ 8001acc:	d101      	bne.n	8001ad2 <read_red_button+0x2a>
+    {
+      return 1; // Pressed
+ 8001ace:	2301      	movs	r3, #1
+ 8001ad0:	e000      	b.n	8001ad4 <read_red_button+0x2c>
+    }
+  }
+  return 0; // Not pressed
+ 8001ad2:	2300      	movs	r3, #0
+}
+ 8001ad4:	4618      	mov	r0, r3
+ 8001ad6:	bd80      	pop	{r7, pc}
+ 8001ad8:	40020800 	.word	0x40020800
+
+08001adc <buzzer_error_alert>:
+// =================================================================
+// == BUZZER ERROR ALERT (I2C/Critical Hardware Error) ==
+// Pattern: 3 LONG beeps → continuous FAST beeps
+// =================================================================
+void buzzer_error_alert(void)
+{
+ 8001adc:	b580      	push	{r7, lr}
+ 8001ade:	b082      	sub	sp, #8
+ 8001ae0:	af00      	add	r7, sp, #0
+  // Beep pattern: 3 long beeps (500ms ON, 500ms OFF)
+  for (int i = 0; i < 3; i++)
+ 8001ae2:	2300      	movs	r3, #0
+ 8001ae4:	607b      	str	r3, [r7, #4]
+ 8001ae6:	e016      	b.n	8001b16 <buzzer_error_alert+0x3a>
+  {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001ae8:	2201      	movs	r2, #1
+ 8001aea:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001aee:	4815      	ldr	r0, [pc, #84]	@ (8001b44 <buzzer_error_alert+0x68>)
+ 8001af0:	f004 feb8 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(500);
+ 8001af4:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001af8:	f004 fb38 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+ 8001afc:	2200      	movs	r2, #0
+ 8001afe:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b02:	4810      	ldr	r0, [pc, #64]	@ (8001b44 <buzzer_error_alert+0x68>)
+ 8001b04:	f004 feae 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(500);
+ 8001b08:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001b0c:	f004 fb2e 	bl	800616c <HAL_Delay>
+  for (int i = 0; i < 3; i++)
+ 8001b10:	687b      	ldr	r3, [r7, #4]
+ 8001b12:	3301      	adds	r3, #1
+ 8001b14:	607b      	str	r3, [r7, #4]
+ 8001b16:	687b      	ldr	r3, [r7, #4]
+ 8001b18:	2b02      	cmp	r3, #2
+ 8001b1a:	dde5      	ble.n	8001ae8 <buzzer_error_alert+0xc>
+  }
+
+  // Continuous fast beep to indicate error persists
+  while (1)
+  {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001b1c:	2201      	movs	r2, #1
+ 8001b1e:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b22:	4808      	ldr	r0, [pc, #32]	@ (8001b44 <buzzer_error_alert+0x68>)
+ 8001b24:	f004 fe9e 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(200);
+ 8001b28:	20c8      	movs	r0, #200	@ 0xc8
+ 8001b2a:	f004 fb1f 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+ 8001b2e:	2200      	movs	r2, #0
+ 8001b30:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b34:	4803      	ldr	r0, [pc, #12]	@ (8001b44 <buzzer_error_alert+0x68>)
+ 8001b36:	f004 fe95 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(200);
+ 8001b3a:	20c8      	movs	r0, #200	@ 0xc8
+ 8001b3c:	f004 fb16 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001b40:	bf00      	nop
+ 8001b42:	e7eb      	b.n	8001b1c <buzzer_error_alert+0x40>
+ 8001b44:	40020800 	.word	0x40020800
+
+08001b48 <buzzer_state_error_alert>:
+// =================================================================
+// == BUZZER STATE ERROR ALERT ==
+// Pattern: 5 SHORT beeps → continuous SLOW beeps
+// =================================================================
+void buzzer_state_error_alert(void)
+{
+ 8001b48:	b580      	push	{r7, lr}
+ 8001b4a:	b082      	sub	sp, #8
+ 8001b4c:	af00      	add	r7, sp, #0
+  // Beep pattern: 5 short beeps (200ms ON, 200ms OFF)
+  for (int i = 0; i < 5; i++)
+ 8001b4e:	2300      	movs	r3, #0
+ 8001b50:	607b      	str	r3, [r7, #4]
+ 8001b52:	e014      	b.n	8001b7e <buzzer_state_error_alert+0x36>
+  {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001b54:	2201      	movs	r2, #1
+ 8001b56:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b5a:	4815      	ldr	r0, [pc, #84]	@ (8001bb0 <buzzer_state_error_alert+0x68>)
+ 8001b5c:	f004 fe82 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(200);
+ 8001b60:	20c8      	movs	r0, #200	@ 0xc8
+ 8001b62:	f004 fb03 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+ 8001b66:	2200      	movs	r2, #0
+ 8001b68:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b6c:	4810      	ldr	r0, [pc, #64]	@ (8001bb0 <buzzer_state_error_alert+0x68>)
+ 8001b6e:	f004 fe79 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(200);
+ 8001b72:	20c8      	movs	r0, #200	@ 0xc8
+ 8001b74:	f004 fafa 	bl	800616c <HAL_Delay>
+  for (int i = 0; i < 5; i++)
+ 8001b78:	687b      	ldr	r3, [r7, #4]
+ 8001b7a:	3301      	adds	r3, #1
+ 8001b7c:	607b      	str	r3, [r7, #4]
+ 8001b7e:	687b      	ldr	r3, [r7, #4]
+ 8001b80:	2b04      	cmp	r3, #4
+ 8001b82:	dde7      	ble.n	8001b54 <buzzer_state_error_alert+0xc>
+  }
+
+  // Continuous slow beep to indicate state error persists
+  while (1)
+  {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001b84:	2201      	movs	r2, #1
+ 8001b86:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b8a:	4809      	ldr	r0, [pc, #36]	@ (8001bb0 <buzzer_state_error_alert+0x68>)
+ 8001b8c:	f004 fe6a 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(500);
+ 8001b90:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001b94:	f004 faea 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); // Buzzer OFF
+ 8001b98:	2200      	movs	r2, #0
+ 8001b9a:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001b9e:	4804      	ldr	r0, [pc, #16]	@ (8001bb0 <buzzer_state_error_alert+0x68>)
+ 8001ba0:	f004 fe60 	bl	8006864 <HAL_GPIO_WritePin>
+    HAL_Delay(500);
+ 8001ba4:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001ba8:	f004 fae0 	bl	800616c <HAL_Delay>
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET); // Buzzer ON
+ 8001bac:	bf00      	nop
+ 8001bae:	e7e9      	b.n	8001b84 <buzzer_state_error_alert+0x3c>
+ 8001bb0:	40020800 	.word	0x40020800
+
+08001bb4 <_write>:
+  }
+}
+
+// ==================== Override printf untuk UART ====================
+int _write(int file, char *ptr, int len)
+{
+ 8001bb4:	b580      	push	{r7, lr}
+ 8001bb6:	b084      	sub	sp, #16
+ 8001bb8:	af00      	add	r7, sp, #0
+ 8001bba:	60f8      	str	r0, [r7, #12]
+ 8001bbc:	60b9      	str	r1, [r7, #8]
+ 8001bbe:	607a      	str	r2, [r7, #4]
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
+ 8001bc0:	687b      	ldr	r3, [r7, #4]
+ 8001bc2:	b29a      	uxth	r2, r3
+ 8001bc4:	f04f 33ff 	mov.w	r3, #4294967295
+ 8001bc8:	68b9      	ldr	r1, [r7, #8]
+ 8001bca:	4804      	ldr	r0, [pc, #16]	@ (8001bdc <_write+0x28>)
+ 8001bcc:	f008 f802 	bl	8009bd4 <HAL_UART_Transmit>
+  return len;
+ 8001bd0:	687b      	ldr	r3, [r7, #4]
+>>>>>>> test-integration
 }
  8001a92:	4618      	mov	r0, r3
  8001a94:	3710      	adds	r7, #16
@@ -2835,9 +3089,9 @@ int _write(int file, char *ptr, int len) {
 
 08001aa0 <main>:
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
  8001aa0:	e92d 43b0 	stmdb	sp!, {r4, r5, r7, r8, r9, lr}
@@ -2887,6 +3141,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Initialize HC-SR04 sensor library
+<<<<<<< HEAD
   HC_SR04_Delay_Init(&htim5);  // Initialize delay timer
  8001adc:	48cb      	ldr	r0, [pc, #812]	@ (8001e0c <main+0x36c>)
  8001ade:	f7ff fa9f 	bl	8001020 <HC_SR04_Delay_Init>
@@ -2898,6 +3153,19 @@ int main(void)
   HAL_Delay(200);              // Wait for sensors to settle after power-on
  8001aec:	20c8      	movs	r0, #200	@ 0xc8
  8001aee:	f003 fb83 	bl	80051f8 <HAL_Delay>
+=======
+  HC_SR04_Delay_Init(&htim5); // Initialize delay timer
+ 8001c1c:	4869      	ldr	r0, [pc, #420]	@ (8001dc4 <main+0x1e4>)
+ 8001c1e:	f7ff f9ff 	bl	8001020 <HC_SR04_Delay_Init>
+  HAL_Delay(100);             // Wait for timers to stabilize
+ 8001c22:	2064      	movs	r0, #100	@ 0x64
+ 8001c24:	f004 faa2 	bl	800616c <HAL_Delay>
+  HC_SR04_Init();             // Initialize all 8 sensors + start input capture
+ 8001c28:	f7ff fb56 	bl	80012d8 <HC_SR04_Init>
+  HAL_Delay(200);             // Wait for sensors to settle after power-on
+ 8001c2c:	20c8      	movs	r0, #200	@ 0xc8
+ 8001c2e:	f004 fa9d 	bl	800616c <HAL_Delay>
+>>>>>>> test-integration
 
   // Dummy reads to clear any noise
   HC_SR04_Trigger_All();
@@ -2914,6 +3182,7 @@ int main(void)
   Motor_Init();
  8001b06:	f001 fe79 	bl	80037fc <Motor_Init>
 
+<<<<<<< HEAD
   // Initialize MPU6050
   MPU6050_Init(&hi2c1);
  8001b0a:	48c1      	ldr	r0, [pc, #772]	@ (8001e10 <main+0x370>)
@@ -2924,6 +3193,289 @@ int main(void)
   HAL_Delay(100);
  8001b16:	2064      	movs	r0, #100	@ 0x64
  8001b18:	f003 fb6e 	bl	80051f8 <HAL_Delay>
+=======
+  // I2C Scanner dengan retry logic
+  printf("Scanning I2C bus...\r\n");
+ 8001c4a:	485f      	ldr	r0, [pc, #380]	@ (8001dc8 <main+0x1e8>)
+ 8001c4c:	f009 ffae 	bl	800bbac <puts>
+  const uint8_t I2C_SCAN_MAX_RETRIES = 3;
+ 8001c50:	2303      	movs	r3, #3
+ 8001c52:	f887 304b 	strb.w	r3, [r7, #75]	@ 0x4b
+  uint8_t found_devices = 0;
+ 8001c56:	2300      	movs	r3, #0
+ 8001c58:	f887 3057 	strb.w	r3, [r7, #87]	@ 0x57
+  uint8_t scan_retry_count = 0;
+ 8001c5c:	2300      	movs	r3, #0
+ 8001c5e:	f887 3056 	strb.w	r3, [r7, #86]	@ 0x56
+
+  for (scan_retry_count = 0; scan_retry_count < I2C_SCAN_MAX_RETRIES; scan_retry_count++)
+ 8001c62:	2300      	movs	r3, #0
+ 8001c64:	f887 3056 	strb.w	r3, [r7, #86]	@ 0x56
+ 8001c68:	e054      	b.n	8001d14 <main+0x134>
+  {
+    if (scan_retry_count > 0)
+ 8001c6a:	f897 3056 	ldrb.w	r3, [r7, #86]	@ 0x56
+ 8001c6e:	2b00      	cmp	r3, #0
+ 8001c70:	d008      	beq.n	8001c84 <main+0xa4>
+    {
+      printf("I2C scan attempt #%d/%d...\r\n", scan_retry_count + 1, I2C_SCAN_MAX_RETRIES);
+ 8001c72:	f897 3056 	ldrb.w	r3, [r7, #86]	@ 0x56
+ 8001c76:	3301      	adds	r3, #1
+ 8001c78:	f897 204b 	ldrb.w	r2, [r7, #75]	@ 0x4b
+ 8001c7c:	4619      	mov	r1, r3
+ 8001c7e:	4853      	ldr	r0, [pc, #332]	@ (8001dcc <main+0x1ec>)
+ 8001c80:	f009 ff2c 	bl	800badc <iprintf>
+    }
+
+    found_devices = 0; // Reset counter for each retry
+ 8001c84:	2300      	movs	r3, #0
+ 8001c86:	f887 3057 	strb.w	r3, [r7, #87]	@ 0x57
+    for (uint8_t addr = 1; addr < 128; addr++)
+ 8001c8a:	2301      	movs	r3, #1
+ 8001c8c:	f887 3055 	strb.w	r3, [r7, #85]	@ 0x55
+ 8001c90:	e01c      	b.n	8001ccc <main+0xec>
+    {
+      if (HAL_I2C_IsDeviceReady(&hi2c1, addr << 1, 1, 10) == HAL_OK)
+ 8001c92:	f897 3055 	ldrb.w	r3, [r7, #85]	@ 0x55
+ 8001c96:	b29b      	uxth	r3, r3
+ 8001c98:	005b      	lsls	r3, r3, #1
+ 8001c9a:	b299      	uxth	r1, r3
+ 8001c9c:	230a      	movs	r3, #10
+ 8001c9e:	2201      	movs	r2, #1
+ 8001ca0:	484b      	ldr	r0, [pc, #300]	@ (8001dd0 <main+0x1f0>)
+ 8001ca2:	f005 fa69 	bl	8007178 <HAL_I2C_IsDeviceReady>
+ 8001ca6:	4603      	mov	r3, r0
+ 8001ca8:	2b00      	cmp	r3, #0
+ 8001caa:	d10a      	bne.n	8001cc2 <main+0xe2>
+      {
+        printf("Device found at address 0x%02X\r\n", addr);
+ 8001cac:	f897 3055 	ldrb.w	r3, [r7, #85]	@ 0x55
+ 8001cb0:	4619      	mov	r1, r3
+ 8001cb2:	4848      	ldr	r0, [pc, #288]	@ (8001dd4 <main+0x1f4>)
+ 8001cb4:	f009 ff12 	bl	800badc <iprintf>
+        found_devices++;
+ 8001cb8:	f897 3057 	ldrb.w	r3, [r7, #87]	@ 0x57
+ 8001cbc:	3301      	adds	r3, #1
+ 8001cbe:	f887 3057 	strb.w	r3, [r7, #87]	@ 0x57
+    for (uint8_t addr = 1; addr < 128; addr++)
+ 8001cc2:	f897 3055 	ldrb.w	r3, [r7, #85]	@ 0x55
+ 8001cc6:	3301      	adds	r3, #1
+ 8001cc8:	f887 3055 	strb.w	r3, [r7, #85]	@ 0x55
+ 8001ccc:	f997 3055 	ldrsb.w	r3, [r7, #85]	@ 0x55
+ 8001cd0:	2b00      	cmp	r3, #0
+ 8001cd2:	dade      	bge.n	8001c92 <main+0xb2>
+      }
+    }
+
+    if (found_devices > 0)
+ 8001cd4:	f897 3057 	ldrb.w	r3, [r7, #87]	@ 0x57
+ 8001cd8:	2b00      	cmp	r3, #0
+ 8001cda:	d009      	beq.n	8001cf0 <main+0x110>
+    {
+      printf("Found %d I2C device(s) on attempt #%d.\r\n\r\n", found_devices, scan_retry_count + 1);
+ 8001cdc:	f897 1057 	ldrb.w	r1, [r7, #87]	@ 0x57
+ 8001ce0:	f897 3056 	ldrb.w	r3, [r7, #86]	@ 0x56
+ 8001ce4:	3301      	adds	r3, #1
+ 8001ce6:	461a      	mov	r2, r3
+ 8001ce8:	483b      	ldr	r0, [pc, #236]	@ (8001dd8 <main+0x1f8>)
+ 8001cea:	f009 fef7 	bl	800badc <iprintf>
+      break; // Success, exit retry loop
+ 8001cee:	e017      	b.n	8001d20 <main+0x140>
+    }
+    else
+    {
+      printf("No I2C devices found (attempt #%d/%d).\r\n", scan_retry_count + 1, I2C_SCAN_MAX_RETRIES);
+ 8001cf0:	f897 3056 	ldrb.w	r3, [r7, #86]	@ 0x56
+ 8001cf4:	3301      	adds	r3, #1
+ 8001cf6:	f897 204b 	ldrb.w	r2, [r7, #75]	@ 0x4b
+ 8001cfa:	4619      	mov	r1, r3
+ 8001cfc:	4837      	ldr	r0, [pc, #220]	@ (8001ddc <main+0x1fc>)
+ 8001cfe:	f009 feed 	bl	800badc <iprintf>
+      HAL_Delay(500); // Wait before retry
+ 8001d02:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001d06:	f004 fa31 	bl	800616c <HAL_Delay>
+  for (scan_retry_count = 0; scan_retry_count < I2C_SCAN_MAX_RETRIES; scan_retry_count++)
+ 8001d0a:	f897 3056 	ldrb.w	r3, [r7, #86]	@ 0x56
+ 8001d0e:	3301      	adds	r3, #1
+ 8001d10:	f887 3056 	strb.w	r3, [r7, #86]	@ 0x56
+ 8001d14:	f897 2056 	ldrb.w	r2, [r7, #86]	@ 0x56
+ 8001d18:	f897 304b 	ldrb.w	r3, [r7, #75]	@ 0x4b
+ 8001d1c:	429a      	cmp	r2, r3
+ 8001d1e:	d3a4      	bcc.n	8001c6a <main+0x8a>
+    }
+  }
+
+  // Check if scan failed after all retries
+  if (found_devices == 0)
+ 8001d20:	f897 3057 	ldrb.w	r3, [r7, #87]	@ 0x57
+ 8001d24:	2b00      	cmp	r3, #0
+ 8001d26:	d122      	bne.n	8001d6e <main+0x18e>
+  {
+    printf("\r\n========================================\r\n");
+ 8001d28:	482d      	ldr	r0, [pc, #180]	@ (8001de0 <main+0x200>)
+ 8001d2a:	f009 ff3f 	bl	800bbac <puts>
+    printf("CRITICAL ERROR: I2C SCAN FAILED!\r\n");
+ 8001d2e:	482d      	ldr	r0, [pc, #180]	@ (8001de4 <main+0x204>)
+ 8001d30:	f009 ff3c 	bl	800bbac <puts>
+    printf("No devices found after %d attempts.\r\n", I2C_SCAN_MAX_RETRIES);
+ 8001d34:	f897 304b 	ldrb.w	r3, [r7, #75]	@ 0x4b
+ 8001d38:	4619      	mov	r1, r3
+ 8001d3a:	482b      	ldr	r0, [pc, #172]	@ (8001de8 <main+0x208>)
+ 8001d3c:	f009 fece 	bl	800badc <iprintf>
+    printf("Check: I2C connections (SCL=PB6, SDA=PB7)\r\n");
+ 8001d40:	482a      	ldr	r0, [pc, #168]	@ (8001dec <main+0x20c>)
+ 8001d42:	f009 ff33 	bl	800bbac <puts>
+    printf("Check: MPU6050 power supply\r\n");
+ 8001d46:	482a      	ldr	r0, [pc, #168]	@ (8001df0 <main+0x210>)
+ 8001d48:	f009 ff30 	bl	800bbac <puts>
+    printf("Check: Pull-up resistors (4.7k on SCL/SDA)\r\n");
+ 8001d4c:	4829      	ldr	r0, [pc, #164]	@ (8001df4 <main+0x214>)
+ 8001d4e:	f009 ff2d 	bl	800bbac <puts>
+    printf("========================================\r\n");
+ 8001d52:	4829      	ldr	r0, [pc, #164]	@ (8001df8 <main+0x218>)
+ 8001d54:	f009 ff2a 	bl	800bbac <puts>
+    printf("BUZZER ALERT ACTIVATED!\r\n");
+ 8001d58:	4828      	ldr	r0, [pc, #160]	@ (8001dfc <main+0x21c>)
+ 8001d5a:	f009 ff27 	bl	800bbac <puts>
+    printf("Press RESET button to retry.\r\n");
+ 8001d5e:	4828      	ldr	r0, [pc, #160]	@ (8001e00 <main+0x220>)
+ 8001d60:	f009 ff24 	bl	800bbac <puts>
+    printf("========================================\r\n\r\n");
+ 8001d64:	4827      	ldr	r0, [pc, #156]	@ (8001e04 <main+0x224>)
+ 8001d66:	f009 ff21 	bl	800bbac <puts>
+
+    buzzer_error_alert(); // Activate buzzer and halt
+ 8001d6a:	f7ff feb7 	bl	8001adc <buzzer_error_alert>
+  }
+  HAL_Delay(500);
+ 8001d6e:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001d72:	f004 f9fb 	bl	800616c <HAL_Delay>
+
+  // Initialize MPU6050 (single try - I2C scan already verified device exists)
+  printf("Initializing MPU6050...\r\n");
+ 8001d76:	4824      	ldr	r0, [pc, #144]	@ (8001e08 <main+0x228>)
+ 8001d78:	f009 ff18 	bl	800bbac <puts>
+  uint8_t mpu_status = MPU6050_Init(&hi2c1);
+ 8001d7c:	4814      	ldr	r0, [pc, #80]	@ (8001dd0 <main+0x1f0>)
+ 8001d7e:	f003 f834 	bl	8004dea <MPU6050_Init>
+ 8001d82:	4603      	mov	r3, r0
+ 8001d84:	f887 304a 	strb.w	r3, [r7, #74]	@ 0x4a
+  if (mpu_status == 0)
+ 8001d88:	f897 304a 	ldrb.w	r3, [r7, #74]	@ 0x4a
+ 8001d8c:	2b00      	cmp	r3, #0
+ 8001d8e:	d110      	bne.n	8001db2 <main+0x1d2>
+  {
+    printf("MPU6050 initialized successfully.\r\n");
+ 8001d90:	481e      	ldr	r0, [pc, #120]	@ (8001e0c <main+0x22c>)
+ 8001d92:	f009 ff0b 	bl	800bbac <puts>
+    printf("ERROR: MPU6050 initialization FAILED!\r\n");
+    printf("Expected address 0x68, check AD0 pin (should be LOW).\r\n");
+    while (1)
+      ; // Stop execution (I2C scan passed, so this is MPU-specific issue)
+  }
+  HAL_Delay(100);
+ 8001d96:	2064      	movs	r0, #100	@ 0x64
+ 8001d98:	f004 f9e8 	bl	800616c <HAL_Delay>
+
+  // Kalibrasi Gyroscope Bias (robot harus DIAM!)
+  printf("Kalibrasi gyro dimulai... Jangan gerakkan robot!\r\n");
+ 8001d9c:	481c      	ldr	r0, [pc, #112]	@ (8001e10 <main+0x230>)
+ 8001d9e:	f009 ff05 	bl	800bbac <puts>
+  float Gz_sum = 0;
+ 8001da2:	f04f 0300 	mov.w	r3, #0
+ 8001da6:	653b      	str	r3, [r7, #80]	@ 0x50
+  const int calibration_samples = 100;
+ 8001da8:	2364      	movs	r3, #100	@ 0x64
+ 8001daa:	647b      	str	r3, [r7, #68]	@ 0x44
+
+  for (int i = 0; i < calibration_samples; i++)
+ 8001dac:	2300      	movs	r3, #0
+ 8001dae:	64fb      	str	r3, [r7, #76]	@ 0x4c
+ 8001db0:	e04e      	b.n	8001e50 <main+0x270>
+    printf("ERROR: MPU6050 initialization FAILED!\r\n");
+ 8001db2:	4818      	ldr	r0, [pc, #96]	@ (8001e14 <main+0x234>)
+ 8001db4:	f009 fefa 	bl	800bbac <puts>
+    printf("Expected address 0x68, check AD0 pin (should be LOW).\r\n");
+ 8001db8:	4817      	ldr	r0, [pc, #92]	@ (8001e18 <main+0x238>)
+ 8001dba:	f009 fef7 	bl	800bbac <puts>
+    while (1)
+ 8001dbe:	bf00      	nop
+ 8001dc0:	e7fd      	b.n	8001dbe <main+0x1de>
+ 8001dc2:	bf00      	nop
+ 8001dc4:	200005a0 	.word	0x200005a0
+ 8001dc8:	0800fbc0 	.word	0x0800fbc0
+ 8001dcc:	0800fbd8 	.word	0x0800fbd8
+ 8001dd0:	20000474 	.word	0x20000474
+ 8001dd4:	0800fbf8 	.word	0x0800fbf8
+ 8001dd8:	0800fc1c 	.word	0x0800fc1c
+ 8001ddc:	0800fc48 	.word	0x0800fc48
+ 8001de0:	0800fc74 	.word	0x0800fc74
+ 8001de4:	0800fca0 	.word	0x0800fca0
+ 8001de8:	0800fcc4 	.word	0x0800fcc4
+ 8001dec:	0800fcec 	.word	0x0800fcec
+ 8001df0:	0800fd18 	.word	0x0800fd18
+ 8001df4:	0800fd38 	.word	0x0800fd38
+ 8001df8:	0800fd64 	.word	0x0800fd64
+ 8001dfc:	0800fd90 	.word	0x0800fd90
+ 8001e00:	0800fdac 	.word	0x0800fdac
+ 8001e04:	0800fdcc 	.word	0x0800fdcc
+ 8001e08:	0800fdf8 	.word	0x0800fdf8
+ 8001e0c:	0800fe14 	.word	0x0800fe14
+ 8001e10:	0800fe98 	.word	0x0800fe98
+ 8001e14:	0800fe38 	.word	0x0800fe38
+ 8001e18:	0800fe60 	.word	0x0800fe60
+  {
+    MPU6050_Read_All(&hi2c1, &MPU6050);
+ 8001e1c:	49c2      	ldr	r1, [pc, #776]	@ (8002128 <main+0x548>)
+ 8001e1e:	48c3      	ldr	r0, [pc, #780]	@ (800212c <main+0x54c>)
+ 8001e20:	f003 f83a 	bl	8004e98 <MPU6050_Read_All>
+    Gz_sum += MPU6050.Gz;
+ 8001e24:	6d38      	ldr	r0, [r7, #80]	@ 0x50
+ 8001e26:	f7fe fb8f 	bl	8000548 <__aeabi_f2d>
+ 8001e2a:	4bbf      	ldr	r3, [pc, #764]	@ (8002128 <main+0x548>)
+ 8001e2c:	e9d3 230e 	ldrd	r2, r3, [r3, #56]	@ 0x38
+ 8001e30:	f7fe fa2c 	bl	800028c <__adddf3>
+ 8001e34:	4602      	mov	r2, r0
+ 8001e36:	460b      	mov	r3, r1
+ 8001e38:	4610      	mov	r0, r2
+ 8001e3a:	4619      	mov	r1, r3
+ 8001e3c:	f7fe fed4 	bl	8000be8 <__aeabi_d2f>
+ 8001e40:	4603      	mov	r3, r0
+ 8001e42:	653b      	str	r3, [r7, #80]	@ 0x50
+    HAL_Delay(10);
+ 8001e44:	200a      	movs	r0, #10
+ 8001e46:	f004 f991 	bl	800616c <HAL_Delay>
+  for (int i = 0; i < calibration_samples; i++)
+ 8001e4a:	6cfb      	ldr	r3, [r7, #76]	@ 0x4c
+ 8001e4c:	3301      	adds	r3, #1
+ 8001e4e:	64fb      	str	r3, [r7, #76]	@ 0x4c
+ 8001e50:	6cfa      	ldr	r2, [r7, #76]	@ 0x4c
+ 8001e52:	6c7b      	ldr	r3, [r7, #68]	@ 0x44
+ 8001e54:	429a      	cmp	r2, r3
+ 8001e56:	dbe1      	blt.n	8001e1c <main+0x23c>
+  }
+
+  Gz_bias = Gz_sum / calibration_samples; // Store in global variable
+ 8001e58:	6c7b      	ldr	r3, [r7, #68]	@ 0x44
+ 8001e5a:	ee07 3a90 	vmov	s15, r3
+ 8001e5e:	eeb8 7ae7 	vcvt.f32.s32	s14, s15
+ 8001e62:	edd7 6a14 	vldr	s13, [r7, #80]	@ 0x50
+ 8001e66:	eec6 7a87 	vdiv.f32	s15, s13, s14
+ 8001e6a:	4bb1      	ldr	r3, [pc, #708]	@ (8002130 <main+0x550>)
+ 8001e6c:	edc3 7a00 	vstr	s15, [r3]
+  printf("Kalibrasi selesai! Gz_bias = %.2f deg/s\r\n", Gz_bias);
+ 8001e70:	4baf      	ldr	r3, [pc, #700]	@ (8002130 <main+0x550>)
+ 8001e72:	681b      	ldr	r3, [r3, #0]
+ 8001e74:	4618      	mov	r0, r3
+ 8001e76:	f7fe fb67 	bl	8000548 <__aeabi_f2d>
+ 8001e7a:	4602      	mov	r2, r0
+ 8001e7c:	460b      	mov	r3, r1
+ 8001e7e:	48ad      	ldr	r0, [pc, #692]	@ (8002134 <main+0x554>)
+ 8001e80:	f009 fe2c 	bl	800badc <iprintf>
+  HAL_Delay(500);
+ 8001e84:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001e88:	f004 f970 	bl	800616c <HAL_Delay>
+>>>>>>> test-integration
 
   // Initialize Vision Control System
   // Vision_Init(&huart3);
@@ -2935,12 +3487,37 @@ int main(void)
  8001b22:	4abd      	ldr	r2, [pc, #756]	@ (8001e18 <main+0x378>)
  8001b24:	6013      	str	r3, [r2, #0]
 
+<<<<<<< HEAD
   printf("SYSTEM READY\r\n");
  8001b26:	48bd      	ldr	r0, [pc, #756]	@ (8001e1c <main+0x37c>)
  8001b28:	f008 feaa 	bl	800a880 <puts>
   HAL_Delay(100);
  8001b2c:	2064      	movs	r0, #100	@ 0x64
  8001b2e:	f003 fb63 	bl	80051f8 <HAL_Delay>
+=======
+  printf("\r\n========================================\r\n");
+ 8001e9c:	48a8      	ldr	r0, [pc, #672]	@ (8002140 <main+0x560>)
+ 8001e9e:	f009 fe85 	bl	800bbac <puts>
+  printf("SYSTEM READY!\r\n");
+ 8001ea2:	48a8      	ldr	r0, [pc, #672]	@ (8002144 <main+0x564>)
+ 8001ea4:	f009 fe82 	bl	800bbac <puts>
+  printf("All sensors initialized successfully.\r\n");
+ 8001ea8:	48a7      	ldr	r0, [pc, #668]	@ (8002148 <main+0x568>)
+ 8001eaa:	f009 fe7f 	bl	800bbac <puts>
+  printf("========================================\r\n");
+ 8001eae:	48a7      	ldr	r0, [pc, #668]	@ (800214c <main+0x56c>)
+ 8001eb0:	f009 fe7c 	bl	800bbac <puts>
+  printf("Press GREEN BUTTON to start operation...\r\n");
+ 8001eb4:	48a6      	ldr	r0, [pc, #664]	@ (8002150 <main+0x570>)
+ 8001eb6:	f009 fe79 	bl	800bbac <puts>
+  printf("(Press RED BUTTON anytime to stop)\r\n");
+ 8001eba:	48a6      	ldr	r0, [pc, #664]	@ (8002154 <main+0x574>)
+ 8001ebc:	f009 fe76 	bl	800bbac <puts>
+  printf("========================================\r\n\r\n");
+ 8001ec0:	48a5      	ldr	r0, [pc, #660]	@ (8002158 <main+0x578>)
+ 8001ec2:	f009 fe73 	bl	800bbac <puts>
+#else
+>>>>>>> test-integration
 
 	#if DIAGNOSTIC_MODE == 1
 	  // ========================================================================
@@ -3521,6 +4098,7 @@ int main(void)
 	           break;
  8001fc8:	f000 bf91 	b.w	8002eee <main+0x144e>
 
+<<<<<<< HEAD
 	          case STATE_LINTASAN_1_KOREKSI_LURUS:
 	              // Timeout check - maksimal 5 detik untuk koreksi
 	              if (HAL_GetTick() - waktu_mulai_koreksi > 5000) {
@@ -3972,6 +4550,697 @@ int main(void)
 	              	      Motor_Stop_All();
 	              	      HAL_Delay(2000);
 	              	    }
+=======
+    // ========================================================================
+    // LANGKAH 1.7: CHECK GREEN BUTTON TO START OPERATION
+    // System harus menunggu GREEN button ditekan setelah inisialisasi sebelum mulai beroperasi
+    // ========================================================================
+    if (!system_started)
+ 8001f9c:	4b7a      	ldr	r3, [pc, #488]	@ (8002188 <main+0x5a8>)
+ 8001f9e:	781b      	ldrb	r3, [r3, #0]
+ 8001fa0:	f083 0301 	eor.w	r3, r3, #1
+ 8001fa4:	b2db      	uxtb	r3, r3
+ 8001fa6:	2b00      	cmp	r3, #0
+ 8001fa8:	d01d      	beq.n	8001fe6 <main+0x406>
+    {
+      // System belum dimulai, tunggu GREEN button press
+      if (read_green_button())
+ 8001faa:	f7ff fd63 	bl	8001a74 <read_green_button>
+ 8001fae:	4603      	mov	r3, r0
+ 8001fb0:	2b00      	cmp	r3, #0
+ 8001fb2:	d013      	beq.n	8001fdc <main+0x3fc>
+      {
+        printf("\r\n========================================\r\n");
+ 8001fb4:	4862      	ldr	r0, [pc, #392]	@ (8002140 <main+0x560>)
+ 8001fb6:	f009 fdf9 	bl	800bbac <puts>
+        printf("[System] GREEN BUTTON PRESSED!\r\n");
+ 8001fba:	4874      	ldr	r0, [pc, #464]	@ (800218c <main+0x5ac>)
+ 8001fbc:	f009 fdf6 	bl	800bbac <puts>
+        printf("[System] Starting autonomous operation...\r\n");
+ 8001fc0:	4873      	ldr	r0, [pc, #460]	@ (8002190 <main+0x5b0>)
+ 8001fc2:	f009 fdf3 	bl	800bbac <puts>
+        printf("========================================\r\n\r\n");
+ 8001fc6:	4864      	ldr	r0, [pc, #400]	@ (8002158 <main+0x578>)
+ 8001fc8:	f009 fdf0 	bl	800bbac <puts>
+        system_started = true;
+ 8001fcc:	4b6e      	ldr	r3, [pc, #440]	@ (8002188 <main+0x5a8>)
+ 8001fce:	2201      	movs	r2, #1
+ 8001fd0:	701a      	strb	r2, [r3, #0]
+        HAL_Delay(500); // Debounce delay
+ 8001fd2:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8001fd6:	f004 f8c9 	bl	800616c <HAL_Delay>
+ 8001fda:	e004      	b.n	8001fe6 <main+0x406>
+      }
+      else
+      {
+        // Belum ditekan, skip rest of loop dan tunggu
+        HAL_Delay(100); // Small delay to prevent busy loop
+ 8001fdc:	2064      	movs	r0, #100	@ 0x64
+ 8001fde:	f004 f8c5 	bl	800616c <HAL_Delay>
+        continue;       // Skip ke iterasi berikutnya (tidak proses sensor, tidak printf spam)
+ 8001fe2:	f001 bb3d 	b.w	8003660 <main+0x1a80>
+
+    // ===========================================================	=============
+    // LANGKAH 2: PROSES DATA SENSOR MENJADI INFORMASI
+    // ========================================================================
+    // Kondisi Jarak
+    bool ada_halangan_depan = (sensor_a < batas_jarak_depan) && (sensor_b < batas_jarak_depan);
+ 8001fe6:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8001fea:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8001fee:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8001ff2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8001ff6:	d50a      	bpl.n	800200e <main+0x42e>
+ 8001ff8:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8001ffc:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002000:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002004:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002008:	d501      	bpl.n	800200e <main+0x42e>
+ 800200a:	2301      	movs	r3, #1
+ 800200c:	e000      	b.n	8002010 <main+0x430>
+ 800200e:	2300      	movs	r3, #0
+ 8002010:	76fb      	strb	r3, [r7, #27]
+ 8002012:	7efb      	ldrb	r3, [r7, #27]
+ 8002014:	f003 0301 	and.w	r3, r3, #1
+ 8002018:	76fb      	strb	r3, [r7, #27]
+    // ========================================================================
+    // LANGKAH 3: DEBUGGING PRINTF
+    // ========================================================================
+    // Cetak informasi penting untuk debugging di satu baris
+
+    printf("State:%d | Dpn(A,B):%.0f,%.0f | Bkg(E,F):%.0f,%.0f \r\n",
+ 800201a:	4b5e      	ldr	r3, [pc, #376]	@ (8002194 <main+0x5b4>)
+ 800201c:	781b      	ldrb	r3, [r3, #0]
+ 800201e:	b2db      	uxtb	r3, r3
+ 8002020:	461e      	mov	r6, r3
+ 8002022:	6c38      	ldr	r0, [r7, #64]	@ 0x40
+ 8002024:	f7fe fa90 	bl	8000548 <__aeabi_f2d>
+ 8002028:	4682      	mov	sl, r0
+ 800202a:	468b      	mov	fp, r1
+ 800202c:	6bf8      	ldr	r0, [r7, #60]	@ 0x3c
+ 800202e:	f7fe fa8b 	bl	8000548 <__aeabi_f2d>
+ 8002032:	4604      	mov	r4, r0
+ 8002034:	460d      	mov	r5, r1
+ 8002036:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8002038:	f7fe fa86 	bl	8000548 <__aeabi_f2d>
+ 800203c:	4680      	mov	r8, r0
+ 800203e:	4689      	mov	r9, r1
+ 8002040:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8002042:	f7fe fa81 	bl	8000548 <__aeabi_f2d>
+ 8002046:	4602      	mov	r2, r0
+ 8002048:	460b      	mov	r3, r1
+ 800204a:	e9cd 2304 	strd	r2, r3, [sp, #16]
+ 800204e:	e9cd 8902 	strd	r8, r9, [sp, #8]
+ 8002052:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002056:	4652      	mov	r2, sl
+ 8002058:	465b      	mov	r3, fp
+ 800205a:	4631      	mov	r1, r6
+ 800205c:	484e      	ldr	r0, [pc, #312]	@ (8002198 <main+0x5b8>)
+ 800205e:	f009 fd3d 	bl	800badc <iprintf>
+
+    // ========================================================================
+    // LANGKAH 3.5: CHECK RED BUTTON FOR EMERGENCY STOP
+    // User dapat menekan RED button kapan saja untuk end session
+    // ========================================================================
+    if (read_red_button())
+ 8002062:	f7ff fd21 	bl	8001aa8 <read_red_button>
+ 8002066:	4603      	mov	r3, r0
+ 8002068:	2b00      	cmp	r3, #0
+ 800206a:	d024      	beq.n	80020b6 <main+0x4d6>
+    {
+      printf("\r\n========================================\r\n");
+ 800206c:	4834      	ldr	r0, [pc, #208]	@ (8002140 <main+0x560>)
+ 800206e:	f009 fd9d 	bl	800bbac <puts>
+      printf("[System] RED BUTTON PRESSED! Stopping robot...\r\n");
+ 8002072:	484a      	ldr	r0, [pc, #296]	@ (800219c <main+0x5bc>)
+ 8002074:	f009 fd9a 	bl	800bbac <puts>
+      printf("========================================\r\n\r\n");
+ 8002078:	4837      	ldr	r0, [pc, #220]	@ (8002158 <main+0x578>)
+ 800207a:	f009 fd97 	bl	800bbac <puts>
+
+      Motor_Stop_All(); // Stop semua motor segera
+ 800207e:	f002 fa83 	bl	8004588 <Motor_Stop_All>
+
+      // Send END_SESSION command to ESP32-CAM
+      Vision_End_Session();
+ 8002082:	f003 ff9d 	bl	8005fc0 <Vision_End_Session>
+
+      printf("\r\n========================================\r\n");
+ 8002086:	482e      	ldr	r0, [pc, #184]	@ (8002140 <main+0x560>)
+ 8002088:	f009 fd90 	bl	800bbac <puts>
+      printf("[System] SESSION ENDED BY USER\r\n");
+ 800208c:	4844      	ldr	r0, [pc, #272]	@ (80021a0 <main+0x5c0>)
+ 800208e:	f009 fd8d 	bl	800bbac <puts>
+      printf("[System] Total photos captured: %d\r\n", photo_counter - 1);
+ 8002092:	4b44      	ldr	r3, [pc, #272]	@ (80021a4 <main+0x5c4>)
+ 8002094:	881b      	ldrh	r3, [r3, #0]
+ 8002096:	3b01      	subs	r3, #1
+ 8002098:	4619      	mov	r1, r3
+ 800209a:	4843      	ldr	r0, [pc, #268]	@ (80021a8 <main+0x5c8>)
+ 800209c:	f009 fd1e 	bl	800badc <iprintf>
+      printf("[System] Press RESET button to restart.\r\n");
+ 80020a0:	4842      	ldr	r0, [pc, #264]	@ (80021ac <main+0x5cc>)
+ 80020a2:	f009 fd83 	bl	800bbac <puts>
+      printf("========================================\r\n\r\n");
+ 80020a6:	482c      	ldr	r0, [pc, #176]	@ (8002158 <main+0x578>)
+ 80020a8:	f009 fd80 	bl	800bbac <puts>
+
+      // Infinite loop - robot stopped, requires reset
+      while (1)
+      {
+        HAL_Delay(1000);
+ 80020ac:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 80020b0:	f004 f85c 	bl	800616c <HAL_Delay>
+ 80020b4:	e7fa      	b.n	80020ac <main+0x4cc>
+    }
+
+    // ========================================================================
+    // LANGKAH 4: STATE MACHINE UTAMA
+    // ========================================================================
+    switch (keadaan_robot)
+ 80020b6:	4b37      	ldr	r3, [pc, #220]	@ (8002194 <main+0x5b4>)
+ 80020b8:	781b      	ldrb	r3, [r3, #0]
+ 80020ba:	b2db      	uxtb	r3, r3
+ 80020bc:	2b17      	cmp	r3, #23
+ 80020be:	f201 82ba 	bhi.w	8003636 <main+0x1a56>
+ 80020c2:	a201      	add	r2, pc, #4	@ (adr r2, 80020c8 <main+0x4e8>)
+ 80020c4:	f852 f023 	ldr.w	pc, [r2, r3, lsl #2]
+ 80020c8:	080021b1 	.word	0x080021b1
+ 80020cc:	0800220f 	.word	0x0800220f
+ 80020d0:	0800222f 	.word	0x0800222f
+ 80020d4:	080022f5 	.word	0x080022f5
+ 80020d8:	080024d5 	.word	0x080024d5
+ 80020dc:	0800259f 	.word	0x0800259f
+ 80020e0:	0800260b 	.word	0x0800260b
+ 80020e4:	080026df 	.word	0x080026df
+ 80020e8:	08002925 	.word	0x08002925
+ 80020ec:	0800296d 	.word	0x0800296d
+ 80020f0:	080029bf 	.word	0x080029bf
+ 80020f4:	08002a89 	.word	0x08002a89
+ 80020f8:	08002b27 	.word	0x08002b27
+ 80020fc:	08002bfb 	.word	0x08002bfb
+ 8002100:	08002c3d 	.word	0x08002c3d
+ 8002104:	08002eaf 	.word	0x08002eaf
+ 8002108:	08002f25 	.word	0x08002f25
+ 800210c:	08002fb7 	.word	0x08002fb7
+ 8002110:	080031f3 	.word	0x080031f3
+ 8002114:	08003269 	.word	0x08003269
+ 8002118:	08003337 	.word	0x08003337
+ 800211c:	08003375 	.word	0x08003375
+ 8002120:	080035df 	.word	0x080035df
+ 8002124:	080035f5 	.word	0x080035f5
+ 8002128:	20000778 	.word	0x20000778
+ 800212c:	20000474 	.word	0x20000474
+ 8002130:	200007dc 	.word	0x200007dc
+ 8002134:	0800fecc 	.word	0x0800fecc
+ 8002138:	20000708 	.word	0x20000708
+ 800213c:	200007d4 	.word	0x200007d4
+ 8002140:	0800fc74 	.word	0x0800fc74
+ 8002144:	0800fef8 	.word	0x0800fef8
+ 8002148:	0800ff08 	.word	0x0800ff08
+ 800214c:	0800fd64 	.word	0x0800fd64
+ 8002150:	0800ff30 	.word	0x0800ff30
+ 8002154:	0800ff5c 	.word	0x0800ff5c
+ 8002158:	0800fdcc 	.word	0x0800fdcc
+ 800215c:	2000028c 	.word	0x2000028c
+ 8002160:	200002c8 	.word	0x200002c8
+ 8002164:	20000304 	.word	0x20000304
+ 8002168:	20000340 	.word	0x20000340
+ 800216c:	2000037c 	.word	0x2000037c
+ 8002170:	200003b8 	.word	0x200003b8
+ 8002174:	200003f4 	.word	0x200003f4
+ 8002178:	20000430 	.word	0x20000430
+ 800217c:	447a0000 	.word	0x447a0000
+ 8002180:	200007d8 	.word	0x200007d8
+ 8002184:	200007d0 	.word	0x200007d0
+ 8002188:	20000753 	.word	0x20000753
+ 800218c:	0800ff80 	.word	0x0800ff80
+ 8002190:	0800ffa0 	.word	0x0800ffa0
+ 8002194:	20000750 	.word	0x20000750
+ 8002198:	0800ffcc 	.word	0x0800ffcc
+ 800219c:	08010004 	.word	0x08010004
+ 80021a0:	08010034 	.word	0x08010034
+ 80021a4:	20000000 	.word	0x20000000
+ 80021a8:	08010054 	.word	0x08010054
+ 80021ac:	0801007c 	.word	0x0801007c
+    {
+    case STATE_SYSTEM_INIT:
+      printf("[System] Waiting for ESP32-CAM initialization...\r\n");
+ 80021b0:	48a6      	ldr	r0, [pc, #664]	@ (800244c <main+0x86c>)
+ 80021b2:	f009 fcfb 	bl	800bbac <puts>
+      // Lakukan handshake dengan ESP32-CAM
+      Vision_Status_t ready_status = Vision_Is_Ready();
+ 80021b6:	f003 fde1 	bl	8005d7c <Vision_Is_Ready>
+ 80021ba:	4603      	mov	r3, r0
+ 80021bc:	717b      	strb	r3, [r7, #5]
+      if (ready_status == VISION_OK)
+ 80021be:	797b      	ldrb	r3, [r7, #5]
+ 80021c0:	2b00      	cmp	r3, #0
+ 80021c2:	d11e      	bne.n	8002202 <main+0x622>
+      {
+        printf("[System] ESP32-CAM ready! Setting Group ID to %d...\r\n", group_counter);
+ 80021c4:	4ba2      	ldr	r3, [pc, #648]	@ (8002450 <main+0x870>)
+ 80021c6:	881b      	ldrh	r3, [r3, #0]
+ 80021c8:	4619      	mov	r1, r3
+ 80021ca:	48a2      	ldr	r0, [pc, #648]	@ (8002454 <main+0x874>)
+ 80021cc:	f009 fc86 	bl	800badc <iprintf>
+        if (Vision_Set_Group_ID(group_counter) == VISION_OK)
+ 80021d0:	4b9f      	ldr	r3, [pc, #636]	@ (8002450 <main+0x870>)
+ 80021d2:	881b      	ldrh	r3, [r3, #0]
+ 80021d4:	4618      	mov	r0, r3
+ 80021d6:	f003 fdf5 	bl	8005dc4 <Vision_Set_Group_ID>
+ 80021da:	4603      	mov	r3, r0
+ 80021dc:	2b00      	cmp	r3, #0
+ 80021de:	d107      	bne.n	80021f0 <main+0x610>
+        {
+          printf("[System] System initialized. Starting navigation.\r\n");
+ 80021e0:	489d      	ldr	r0, [pc, #628]	@ (8002458 <main+0x878>)
+ 80021e2:	f009 fce3 	bl	800bbac <puts>
+          keadaan_robot = STATE_START;
+ 80021e6:	4b9d      	ldr	r3, [pc, #628]	@ (800245c <main+0x87c>)
+ 80021e8:	2201      	movs	r2, #1
+ 80021ea:	701a      	strb	r2, [r3, #0]
+      else
+      {
+        // Jika belum siap, tunggu dan coba lagi
+        HAL_Delay(1000); // Tunggu 1 detik sebelum cek lagi
+      }
+      break;
+ 80021ec:	f001 ba35 	b.w	800365a <main+0x1a7a>
+          printf("[System] ERROR: Failed to set Group ID. Retrying...\r\n");
+ 80021f0:	489b      	ldr	r0, [pc, #620]	@ (8002460 <main+0x880>)
+ 80021f2:	f009 fcdb 	bl	800bbac <puts>
+          HAL_Delay(1000); // Retry after 1 second
+ 80021f6:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 80021fa:	f003 ffb7 	bl	800616c <HAL_Delay>
+      break;
+ 80021fe:	f001 ba2c 	b.w	800365a <main+0x1a7a>
+        HAL_Delay(1000); // Tunggu 1 detik sebelum cek lagi
+ 8002202:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 8002206:	f003 ffb1 	bl	800616c <HAL_Delay>
+      break;
+ 800220a:	f001 ba26 	b.w	800365a <main+0x1a7a>
+    case STATE_START:
+      printf("STATE: START -> LINTASAN_1_MAJU\r\n");
+ 800220e:	4895      	ldr	r0, [pc, #596]	@ (8002464 <main+0x884>)
+ 8002210:	f009 fccc 	bl	800bbac <puts>
+
+      // FLAG-S
+      keadaan_robot = STATE_LINTASAN_1_MAJU;
+ 8002214:	4b91      	ldr	r3, [pc, #580]	@ (800245c <main+0x87c>)
+ 8002216:	2204      	movs	r2, #4
+ 8002218:	701a      	strb	r2, [r3, #0]
+      waktu_terakhir_gerak = HAL_GetTick();
+ 800221a:	f003 ff9b 	bl	8006154 <HAL_GetTick>
+ 800221e:	4603      	mov	r3, r0
+ 8002220:	4a91      	ldr	r2, [pc, #580]	@ (8002468 <main+0x888>)
+ 8002222:	6013      	str	r3, [r2, #0]
+      sedang_bergerak = true; // Mulai dengan bergerak
+ 8002224:	4b91      	ldr	r3, [pc, #580]	@ (800246c <main+0x88c>)
+ 8002226:	2201      	movs	r2, #1
+ 8002228:	701a      	strb	r2, [r3, #0]
+      break;
+ 800222a:	f001 ba16 	b.w	800365a <main+0x1a7a>
+
+    case STATE_TRIGGER_CAPTURE:
+      if (capture_retry_count == 0)
+ 800222e:	4b90      	ldr	r3, [pc, #576]	@ (8002470 <main+0x890>)
+ 8002230:	781b      	ldrb	r3, [r3, #0]
+ 8002232:	2b00      	cmp	r3, #0
+ 8002234:	d106      	bne.n	8002244 <main+0x664>
+      {
+        printf("[Capture] Starting photo #%d...\r\n", photo_counter);
+ 8002236:	4b8f      	ldr	r3, [pc, #572]	@ (8002474 <main+0x894>)
+ 8002238:	881b      	ldrh	r3, [r3, #0]
+ 800223a:	4619      	mov	r1, r3
+ 800223c:	488e      	ldr	r0, [pc, #568]	@ (8002478 <main+0x898>)
+ 800223e:	f009 fc4d 	bl	800badc <iprintf>
+ 8002242:	e008      	b.n	8002256 <main+0x676>
+      }
+      else
+      {
+        printf("[Capture] Retry #%d for photo #%d...\r\n", capture_retry_count, photo_counter);
+ 8002244:	4b8a      	ldr	r3, [pc, #552]	@ (8002470 <main+0x890>)
+ 8002246:	781b      	ldrb	r3, [r3, #0]
+ 8002248:	4619      	mov	r1, r3
+ 800224a:	4b8a      	ldr	r3, [pc, #552]	@ (8002474 <main+0x894>)
+ 800224c:	881b      	ldrh	r3, [r3, #0]
+ 800224e:	461a      	mov	r2, r3
+ 8002250:	488a      	ldr	r0, [pc, #552]	@ (800247c <main+0x89c>)
+ 8002252:	f009 fc43 	bl	800badc <iprintf>
+      }
+
+      Vision_Status_t trigger_status = Vision_Start_Capture(photo_counter);
+ 8002256:	4b87      	ldr	r3, [pc, #540]	@ (8002474 <main+0x894>)
+ 8002258:	881b      	ldrh	r3, [r3, #0]
+ 800225a:	4618      	mov	r0, r3
+ 800225c:	f003 fdd0 	bl	8005e00 <Vision_Start_Capture>
+ 8002260:	4603      	mov	r3, r0
+ 8002262:	71bb      	strb	r3, [r7, #6]
+
+      if (trigger_status == VISION_OK)
+ 8002264:	79bb      	ldrb	r3, [r7, #6]
+ 8002266:	2b00      	cmp	r3, #0
+ 8002268:	d109      	bne.n	800227e <main+0x69e>
+      {
+        waktu_mulai_capture = HAL_GetTick(); // Mulai timer timeout
+ 800226a:	f003 ff73 	bl	8006154 <HAL_GetTick>
+ 800226e:	4603      	mov	r3, r0
+ 8002270:	4a83      	ldr	r2, [pc, #524]	@ (8002480 <main+0x8a0>)
+ 8002272:	6013      	str	r3, [r2, #0]
+        keadaan_robot = STATE_WAIT_FOR_CAPTURE;
+ 8002274:	4b79      	ldr	r3, [pc, #484]	@ (800245c <main+0x87c>)
+ 8002276:	2203      	movs	r2, #3
+ 8002278:	701a      	strb	r2, [r3, #0]
+                 capture_retry_count, MAX_CAPTURE_RETRIES);
+          HAL_Delay(1000); // Tunggu 1 detik sebelum retry
+                           // Tetap di STATE_TRIGGER_CAPTURE untuk retry
+        }
+      }
+      break;
+ 800227a:	f001 b9ee 	b.w	800365a <main+0x1a7a>
+        printf("[Capture] ERROR: Failed to trigger capture command.\r\n");
+ 800227e:	4881      	ldr	r0, [pc, #516]	@ (8002484 <main+0x8a4>)
+ 8002280:	f009 fc94 	bl	800bbac <puts>
+        capture_retry_count++;
+ 8002284:	4b7a      	ldr	r3, [pc, #488]	@ (8002470 <main+0x890>)
+ 8002286:	781b      	ldrb	r3, [r3, #0]
+ 8002288:	3301      	adds	r3, #1
+ 800228a:	b2da      	uxtb	r2, r3
+ 800228c:	4b78      	ldr	r3, [pc, #480]	@ (8002470 <main+0x890>)
+ 800228e:	701a      	strb	r2, [r3, #0]
+        if (capture_retry_count >= MAX_CAPTURE_RETRIES)
+ 8002290:	4b77      	ldr	r3, [pc, #476]	@ (8002470 <main+0x890>)
+ 8002292:	781b      	ldrb	r3, [r3, #0]
+ 8002294:	2203      	movs	r2, #3
+ 8002296:	4293      	cmp	r3, r2
+ 8002298:	d31f      	bcc.n	80022da <main+0x6fa>
+          printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+ 800229a:	2303      	movs	r3, #3
+ 800229c:	4619      	mov	r1, r3
+ 800229e:	4b75      	ldr	r3, [pc, #468]	@ (8002474 <main+0x894>)
+ 80022a0:	881b      	ldrh	r3, [r3, #0]
+ 80022a2:	461a      	mov	r2, r3
+ 80022a4:	4878      	ldr	r0, [pc, #480]	@ (8002488 <main+0x8a8>)
+ 80022a6:	f009 fc19 	bl	800badc <iprintf>
+          photo_counter++;                                   // Skip photo ID setelah max retries
+ 80022aa:	4b72      	ldr	r3, [pc, #456]	@ (8002474 <main+0x894>)
+ 80022ac:	881b      	ldrh	r3, [r3, #0]
+ 80022ae:	3301      	adds	r3, #1
+ 80022b0:	b29a      	uxth	r2, r3
+ 80022b2:	4b70      	ldr	r3, [pc, #448]	@ (8002474 <main+0x894>)
+ 80022b4:	801a      	strh	r2, [r3, #0]
+          capture_retry_count = 0;                           // Reset retry counter
+ 80022b6:	4b6e      	ldr	r3, [pc, #440]	@ (8002470 <main+0x890>)
+ 80022b8:	2200      	movs	r2, #0
+ 80022ba:	701a      	strb	r2, [r3, #0]
+          keadaan_robot = state_selanjutnya_setelah_capture; // Lanjut navigasi
+ 80022bc:	4b73      	ldr	r3, [pc, #460]	@ (800248c <main+0x8ac>)
+ 80022be:	781b      	ldrb	r3, [r3, #0]
+ 80022c0:	b2da      	uxtb	r2, r3
+ 80022c2:	4b66      	ldr	r3, [pc, #408]	@ (800245c <main+0x87c>)
+ 80022c4:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 80022c6:	f003 ff45 	bl	8006154 <HAL_GetTick>
+ 80022ca:	4603      	mov	r3, r0
+ 80022cc:	4a66      	ldr	r2, [pc, #408]	@ (8002468 <main+0x888>)
+ 80022ce:	6013      	str	r3, [r2, #0]
+          sedang_bergerak = false;
+ 80022d0:	4b66      	ldr	r3, [pc, #408]	@ (800246c <main+0x88c>)
+ 80022d2:	2200      	movs	r2, #0
+ 80022d4:	701a      	strb	r2, [r3, #0]
+      break;
+ 80022d6:	f001 b9c0 	b.w	800365a <main+0x1a7a>
+          printf("[Capture] Retrying in 1 second... (%d/%d)\r\n",
+ 80022da:	4b65      	ldr	r3, [pc, #404]	@ (8002470 <main+0x890>)
+ 80022dc:	781b      	ldrb	r3, [r3, #0]
+ 80022de:	2203      	movs	r2, #3
+ 80022e0:	4619      	mov	r1, r3
+ 80022e2:	486b      	ldr	r0, [pc, #428]	@ (8002490 <main+0x8b0>)
+ 80022e4:	f009 fbfa 	bl	800badc <iprintf>
+          HAL_Delay(1000); // Tunggu 1 detik sebelum retry
+ 80022e8:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 80022ec:	f003 ff3e 	bl	800616c <HAL_Delay>
+      break;
+ 80022f0:	f001 b9b3 	b.w	800365a <main+0x1a7a>
+
+    case STATE_WAIT_FOR_CAPTURE:
+      // Cek timeout
+      if (HAL_GetTick() - waktu_mulai_capture > CAPTURE_TIMEOUT_MS)
+ 80022f4:	f003 ff2e 	bl	8006154 <HAL_GetTick>
+ 80022f8:	4602      	mov	r2, r0
+ 80022fa:	4b61      	ldr	r3, [pc, #388]	@ (8002480 <main+0x8a0>)
+ 80022fc:	681b      	ldr	r3, [r3, #0]
+ 80022fe:	1ad3      	subs	r3, r2, r3
+ 8002300:	4a64      	ldr	r2, [pc, #400]	@ (8002494 <main+0x8b4>)
+ 8002302:	4293      	cmp	r3, r2
+ 8002304:	d93a      	bls.n	800237c <main+0x79c>
+      {
+        printf("[Capture] TIMEOUT! ESP32-CAM tidak selesai dalam %d ms.\r\n", CAPTURE_TIMEOUT_MS);
+ 8002306:	4963      	ldr	r1, [pc, #396]	@ (8002494 <main+0x8b4>)
+ 8002308:	4863      	ldr	r0, [pc, #396]	@ (8002498 <main+0x8b8>)
+ 800230a:	f009 fbe7 	bl	800badc <iprintf>
+        capture_retry_count++;
+ 800230e:	4b58      	ldr	r3, [pc, #352]	@ (8002470 <main+0x890>)
+ 8002310:	781b      	ldrb	r3, [r3, #0]
+ 8002312:	3301      	adds	r3, #1
+ 8002314:	b2da      	uxtb	r2, r3
+ 8002316:	4b56      	ldr	r3, [pc, #344]	@ (8002470 <main+0x890>)
+ 8002318:	701a      	strb	r2, [r3, #0]
+
+        if (capture_retry_count >= MAX_CAPTURE_RETRIES)
+ 800231a:	4b55      	ldr	r3, [pc, #340]	@ (8002470 <main+0x890>)
+ 800231c:	781b      	ldrb	r3, [r3, #0]
+ 800231e:	2203      	movs	r2, #3
+ 8002320:	4293      	cmp	r3, r2
+ 8002322:	d31f      	bcc.n	8002364 <main+0x784>
+        {
+          printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+ 8002324:	2303      	movs	r3, #3
+ 8002326:	4619      	mov	r1, r3
+ 8002328:	4b52      	ldr	r3, [pc, #328]	@ (8002474 <main+0x894>)
+ 800232a:	881b      	ldrh	r3, [r3, #0]
+ 800232c:	461a      	mov	r2, r3
+ 800232e:	4856      	ldr	r0, [pc, #344]	@ (8002488 <main+0x8a8>)
+ 8002330:	f009 fbd4 	bl	800badc <iprintf>
+                 MAX_CAPTURE_RETRIES, photo_counter);
+          photo_counter++;         // Skip setelah max retries
+ 8002334:	4b4f      	ldr	r3, [pc, #316]	@ (8002474 <main+0x894>)
+ 8002336:	881b      	ldrh	r3, [r3, #0]
+ 8002338:	3301      	adds	r3, #1
+ 800233a:	b29a      	uxth	r2, r3
+ 800233c:	4b4d      	ldr	r3, [pc, #308]	@ (8002474 <main+0x894>)
+ 800233e:	801a      	strh	r2, [r3, #0]
+          capture_retry_count = 0; // Reset retry counter
+ 8002340:	4b4b      	ldr	r3, [pc, #300]	@ (8002470 <main+0x890>)
+ 8002342:	2200      	movs	r2, #0
+ 8002344:	701a      	strb	r2, [r3, #0]
+          keadaan_robot = state_selanjutnya_setelah_capture;
+ 8002346:	4b51      	ldr	r3, [pc, #324]	@ (800248c <main+0x8ac>)
+ 8002348:	781b      	ldrb	r3, [r3, #0]
+ 800234a:	b2da      	uxtb	r2, r3
+ 800234c:	4b43      	ldr	r3, [pc, #268]	@ (800245c <main+0x87c>)
+ 800234e:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002350:	f003 ff00 	bl	8006154 <HAL_GetTick>
+ 8002354:	4603      	mov	r3, r0
+ 8002356:	4a44      	ldr	r2, [pc, #272]	@ (8002468 <main+0x888>)
+ 8002358:	6013      	str	r3, [r2, #0]
+          sedang_bergerak = false;
+ 800235a:	4b44      	ldr	r3, [pc, #272]	@ (800246c <main+0x88c>)
+ 800235c:	2200      	movs	r2, #0
+ 800235e:	701a      	strb	r2, [r3, #0]
+        {
+          printf("[Capture] Retrying capture... (%d/%d)\r\n",
+                 capture_retry_count, MAX_CAPTURE_RETRIES);
+          keadaan_robot = STATE_TRIGGER_CAPTURE; // Retry dari awal
+        }
+        break;
+ 8002360:	f001 b97b 	b.w	800365a <main+0x1a7a>
+          printf("[Capture] Retrying capture... (%d/%d)\r\n",
+ 8002364:	4b42      	ldr	r3, [pc, #264]	@ (8002470 <main+0x890>)
+ 8002366:	781b      	ldrb	r3, [r3, #0]
+ 8002368:	2203      	movs	r2, #3
+ 800236a:	4619      	mov	r1, r3
+ 800236c:	484b      	ldr	r0, [pc, #300]	@ (800249c <main+0x8bc>)
+ 800236e:	f009 fbb5 	bl	800badc <iprintf>
+          keadaan_robot = STATE_TRIGGER_CAPTURE; // Retry dari awal
+ 8002372:	4b3a      	ldr	r3, [pc, #232]	@ (800245c <main+0x87c>)
+ 8002374:	2202      	movs	r2, #2
+ 8002376:	701a      	strb	r2, [r3, #0]
+        break;
+ 8002378:	f001 b96f 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Poll status dari vision system
+      Vision_Status_t capture_status = Vision_Get_Status();
+ 800237c:	f003 fd7e 	bl	8005e7c <Vision_Get_Status>
+ 8002380:	4603      	mov	r3, r0
+ 8002382:	71fb      	strb	r3, [r7, #7]
+      if (capture_status == VISION_STATUS_SUCCESS)
+ 8002384:	79fb      	ldrb	r3, [r7, #7]
+ 8002386:	2b03      	cmp	r3, #3
+ 8002388:	d11d      	bne.n	80023c6 <main+0x7e6>
+      {
+        printf("[Capture] SUCCESS! Photo #%d uploaded.\r\n", photo_counter);
+ 800238a:	4b3a      	ldr	r3, [pc, #232]	@ (8002474 <main+0x894>)
+ 800238c:	881b      	ldrh	r3, [r3, #0]
+ 800238e:	4619      	mov	r1, r3
+ 8002390:	4843      	ldr	r0, [pc, #268]	@ (80024a0 <main+0x8c0>)
+ 8002392:	f009 fba3 	bl	800badc <iprintf>
+        photo_counter++;                                   // Increment untuk foto berikutnya
+ 8002396:	4b37      	ldr	r3, [pc, #220]	@ (8002474 <main+0x894>)
+ 8002398:	881b      	ldrh	r3, [r3, #0]
+ 800239a:	3301      	adds	r3, #1
+ 800239c:	b29a      	uxth	r2, r3
+ 800239e:	4b35      	ldr	r3, [pc, #212]	@ (8002474 <main+0x894>)
+ 80023a0:	801a      	strh	r2, [r3, #0]
+        capture_retry_count = 0;                           // Reset retry counter untuk foto berikutnya
+ 80023a2:	4b33      	ldr	r3, [pc, #204]	@ (8002470 <main+0x890>)
+ 80023a4:	2200      	movs	r2, #0
+ 80023a6:	701a      	strb	r2, [r3, #0]
+        keadaan_robot = state_selanjutnya_setelah_capture; // Lanjut ke state navigasi berikutnya
+ 80023a8:	4b38      	ldr	r3, [pc, #224]	@ (800248c <main+0x8ac>)
+ 80023aa:	781b      	ldrb	r3, [r3, #0]
+ 80023ac:	b2da      	uxtb	r2, r3
+ 80023ae:	4b2b      	ldr	r3, [pc, #172]	@ (800245c <main+0x87c>)
+ 80023b0:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 80023b2:	f003 fecf 	bl	8006154 <HAL_GetTick>
+ 80023b6:	4603      	mov	r3, r0
+ 80023b8:	4a2b      	ldr	r2, [pc, #172]	@ (8002468 <main+0x888>)
+ 80023ba:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = false;
+ 80023bc:	4b2b      	ldr	r3, [pc, #172]	@ (800246c <main+0x88c>)
+ 80023be:	2200      	movs	r2, #0
+ 80023c0:	701a      	strb	r2, [r3, #0]
+      else
+      {
+        // Masih BUSY atau IDLE, tunggu saja.
+        HAL_Delay(200); // Poll setiap 200ms
+      }
+      break;
+ 80023c2:	f001 b94a 	b.w	800365a <main+0x1a7a>
+      else if (capture_status == VISION_STATUS_ERROR)
+ 80023c6:	79fb      	ldrb	r3, [r7, #7]
+ 80023c8:	2b04      	cmp	r3, #4
+ 80023ca:	d16d      	bne.n	80024a8 <main+0x8c8>
+        printf("[Capture] ERROR! ESP32-CAM melaporkan kegagalan.\r\n");
+ 80023cc:	4835      	ldr	r0, [pc, #212]	@ (80024a4 <main+0x8c4>)
+ 80023ce:	f009 fbed 	bl	800bbac <puts>
+        Vision_Print_Error_Code(); // Baca dan tampilkan error code detail
+ 80023d2:	f003 fd8d 	bl	8005ef0 <Vision_Print_Error_Code>
+        capture_retry_count++;
+ 80023d6:	4b26      	ldr	r3, [pc, #152]	@ (8002470 <main+0x890>)
+ 80023d8:	781b      	ldrb	r3, [r3, #0]
+ 80023da:	3301      	adds	r3, #1
+ 80023dc:	b2da      	uxtb	r2, r3
+ 80023de:	4b24      	ldr	r3, [pc, #144]	@ (8002470 <main+0x890>)
+ 80023e0:	701a      	strb	r2, [r3, #0]
+        if (capture_retry_count >= MAX_CAPTURE_RETRIES)
+ 80023e2:	4b23      	ldr	r3, [pc, #140]	@ (8002470 <main+0x890>)
+ 80023e4:	781b      	ldrb	r3, [r3, #0]
+ 80023e6:	2203      	movs	r2, #3
+ 80023e8:	4293      	cmp	r3, r2
+ 80023ea:	d31f      	bcc.n	800242c <main+0x84c>
+          printf("[Capture] FAILED after %d retries. Skipping photo #%d.\r\n",
+ 80023ec:	2303      	movs	r3, #3
+ 80023ee:	4619      	mov	r1, r3
+ 80023f0:	4b20      	ldr	r3, [pc, #128]	@ (8002474 <main+0x894>)
+ 80023f2:	881b      	ldrh	r3, [r3, #0]
+ 80023f4:	461a      	mov	r2, r3
+ 80023f6:	4824      	ldr	r0, [pc, #144]	@ (8002488 <main+0x8a8>)
+ 80023f8:	f009 fb70 	bl	800badc <iprintf>
+          photo_counter++;         // Skip setelah max retries
+ 80023fc:	4b1d      	ldr	r3, [pc, #116]	@ (8002474 <main+0x894>)
+ 80023fe:	881b      	ldrh	r3, [r3, #0]
+ 8002400:	3301      	adds	r3, #1
+ 8002402:	b29a      	uxth	r2, r3
+ 8002404:	4b1b      	ldr	r3, [pc, #108]	@ (8002474 <main+0x894>)
+ 8002406:	801a      	strh	r2, [r3, #0]
+          capture_retry_count = 0; // Reset retry counter
+ 8002408:	4b19      	ldr	r3, [pc, #100]	@ (8002470 <main+0x890>)
+ 800240a:	2200      	movs	r2, #0
+ 800240c:	701a      	strb	r2, [r3, #0]
+          keadaan_robot = state_selanjutnya_setelah_capture;
+ 800240e:	4b1f      	ldr	r3, [pc, #124]	@ (800248c <main+0x8ac>)
+ 8002410:	781b      	ldrb	r3, [r3, #0]
+ 8002412:	b2da      	uxtb	r2, r3
+ 8002414:	4b11      	ldr	r3, [pc, #68]	@ (800245c <main+0x87c>)
+ 8002416:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002418:	f003 fe9c 	bl	8006154 <HAL_GetTick>
+ 800241c:	4603      	mov	r3, r0
+ 800241e:	4a12      	ldr	r2, [pc, #72]	@ (8002468 <main+0x888>)
+ 8002420:	6013      	str	r3, [r2, #0]
+          sedang_bergerak = false;
+ 8002422:	4b12      	ldr	r3, [pc, #72]	@ (800246c <main+0x88c>)
+ 8002424:	2200      	movs	r2, #0
+ 8002426:	701a      	strb	r2, [r3, #0]
+      break;
+ 8002428:	f001 b917 	b.w	800365a <main+0x1a7a>
+          printf("[Capture] Retrying capture... (%d/%d)\r\n",
+ 800242c:	4b10      	ldr	r3, [pc, #64]	@ (8002470 <main+0x890>)
+ 800242e:	781b      	ldrb	r3, [r3, #0]
+ 8002430:	2203      	movs	r2, #3
+ 8002432:	4619      	mov	r1, r3
+ 8002434:	4819      	ldr	r0, [pc, #100]	@ (800249c <main+0x8bc>)
+ 8002436:	f009 fb51 	bl	800badc <iprintf>
+          HAL_Delay(1000);                       // Tunggu 1 detik sebelum retry
+ 800243a:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 800243e:	f003 fe95 	bl	800616c <HAL_Delay>
+          keadaan_robot = STATE_TRIGGER_CAPTURE; // Retry dari awal
+ 8002442:	4b06      	ldr	r3, [pc, #24]	@ (800245c <main+0x87c>)
+ 8002444:	2202      	movs	r2, #2
+ 8002446:	701a      	strb	r2, [r3, #0]
+      break;
+ 8002448:	f001 b907 	b.w	800365a <main+0x1a7a>
+ 800244c:	080100a8 	.word	0x080100a8
+ 8002450:	20000002 	.word	0x20000002
+ 8002454:	080100dc 	.word	0x080100dc
+ 8002458:	08010114 	.word	0x08010114
+ 800245c:	20000750 	.word	0x20000750
+ 8002460:	08010148 	.word	0x08010148
+ 8002464:	08010180 	.word	0x08010180
+ 8002468:	20000754 	.word	0x20000754
+ 800246c:	20000758 	.word	0x20000758
+ 8002470:	20000752 	.word	0x20000752
+ 8002474:	20000000 	.word	0x20000000
+ 8002478:	080101a4 	.word	0x080101a4
+ 800247c:	080101c8 	.word	0x080101c8
+ 8002480:	20000774 	.word	0x20000774
+ 8002484:	080101f0 	.word	0x080101f0
+ 8002488:	08010228 	.word	0x08010228
+ 800248c:	20000751 	.word	0x20000751
+ 8002490:	08010264 	.word	0x08010264
+ 8002494:	00015f90 	.word	0x00015f90
+ 8002498:	08010290 	.word	0x08010290
+ 800249c:	080102cc 	.word	0x080102cc
+ 80024a0:	080102f4 	.word	0x080102f4
+ 80024a4:	08010320 	.word	0x08010320
+      else if (capture_status == VISION_ERR_COMM || capture_status == VISION_ERR_TIMEOUT)
+ 80024a8:	79fb      	ldrb	r3, [r7, #7]
+ 80024aa:	2b06      	cmp	r3, #6
+ 80024ac:	d002      	beq.n	80024b4 <main+0x8d4>
+ 80024ae:	79fb      	ldrb	r3, [r7, #7]
+ 80024b0:	2b05      	cmp	r3, #5
+ 80024b2:	d10a      	bne.n	80024ca <main+0x8ea>
+        printf("[Capture] Communication error with ESP32-CAM.\r\n");
+ 80024b4:	4894      	ldr	r0, [pc, #592]	@ (8002708 <main+0xb28>)
+ 80024b6:	f009 fb79 	bl	800bbac <puts>
+        printf("[Recovery] Retrying status poll...\r\n");
+ 80024ba:	4894      	ldr	r0, [pc, #592]	@ (800270c <main+0xb2c>)
+ 80024bc:	f009 fb76 	bl	800bbac <puts>
+        HAL_Delay(200); // Tunggu dan retry
+ 80024c0:	20c8      	movs	r0, #200	@ 0xc8
+ 80024c2:	f003 fe53 	bl	800616c <HAL_Delay>
+      break;
+ 80024c6:	f001 b8c8 	b.w	800365a <main+0x1a7a>
+        HAL_Delay(200); // Poll setiap 200ms
+ 80024ca:	20c8      	movs	r0, #200	@ 0xc8
+ 80024cc:	f003 fe4e 	bl	800616c <HAL_Delay>
+      break;
+ 80024d0:	f001 b8c3 	b.w	800365a <main+0x1a7a>
+>>>>>>> test-integration
 
 	              }
 	              break;
@@ -3984,6 +5253,7 @@ int main(void)
 	              break;
  800236c:	f000 bdc1 	b.w	8002ef2 <main+0x1452>
 
+<<<<<<< HEAD
 	          case STATE_LINTASAN_2_MUNDUR_SEBENTAR:
 	              // Mundur hingga jarak depan > 20cm
 	              if (sensor_a < jarak_stop_depan || sensor_b < jarak_stop_depan) {
@@ -5459,6 +6729,2357 @@ int main(void)
 	      HAL_Delay(10); // Delay kecil untuk stabilitas
  8002f00:	200a      	movs	r0, #10
  8002f02:	f002 f979 	bl	80051f8 <HAL_Delay>
+=======
+    case STATE_LINTASAN_1_MAJU:
+      // Cek kondisi transisi state: jika ada halangan di depan
+      if (ada_halangan_depan)
+ 80024d4:	7efb      	ldrb	r3, [r7, #27]
+ 80024d6:	2b00      	cmp	r3, #0
+ 80024d8:	d009      	beq.n	80024ee <main+0x90e>
+      {
+        Motor_Stop_All();
+ 80024da:	f002 f855 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Halangan depan terdeteksi. Masuk ke manuver.\r\n");
+ 80024de:	488c      	ldr	r0, [pc, #560]	@ (8002710 <main+0xb30>)
+ 80024e0:	f009 fb64 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_1_MUNDUR_DARI_DEPAN;
+ 80024e4:	4b8b      	ldr	r3, [pc, #556]	@ (8002714 <main+0xb34>)
+ 80024e6:	2205      	movs	r2, #5
+ 80024e8:	701a      	strb	r2, [r3, #0]
+        break;
+ 80024ea:	f001 b8b6 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Logika gerak 2 detik jalan, 1 detik berhenti
+      if (sedang_bergerak)
+ 80024ee:	4b8a      	ldr	r3, [pc, #552]	@ (8002718 <main+0xb38>)
+ 80024f0:	781b      	ldrb	r3, [r3, #0]
+ 80024f2:	2b00      	cmp	r3, #0
+ 80024f4:	d01b      	beq.n	800252e <main+0x94e>
+      {
+        if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms)
+ 80024f6:	f003 fe2d 	bl	8006154 <HAL_GetTick>
+ 80024fa:	4602      	mov	r2, r0
+ 80024fc:	4b87      	ldr	r3, [pc, #540]	@ (800271c <main+0xb3c>)
+ 80024fe:	681b      	ldr	r3, [r3, #0]
+ 8002500:	1ad3      	subs	r3, r2, r3
+ 8002502:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
+ 8002506:	d326      	bcc.n	8002556 <main+0x976>
+        {
+          Motor_Stop_All();
+ 8002508:	f002 f83e 	bl	8004588 <Motor_Stop_All>
+
+          // Simpan state tujuan, lalu trigger capture
+          state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
+ 800250c:	4b81      	ldr	r3, [pc, #516]	@ (8002714 <main+0xb34>)
+ 800250e:	781b      	ldrb	r3, [r3, #0]
+ 8002510:	b2da      	uxtb	r2, r3
+ 8002512:	4b83      	ldr	r3, [pc, #524]	@ (8002720 <main+0xb40>)
+ 8002514:	701a      	strb	r2, [r3, #0]
+          keadaan_robot = STATE_TRIGGER_CAPTURE;
+ 8002516:	4b7f      	ldr	r3, [pc, #508]	@ (8002714 <main+0xb34>)
+ 8002518:	2202      	movs	r2, #2
+ 800251a:	701a      	strb	r2, [r3, #0]
+          sedang_bergerak = false;
+ 800251c:	4b7e      	ldr	r3, [pc, #504]	@ (8002718 <main+0xb38>)
+ 800251e:	2200      	movs	r2, #0
+ 8002520:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002522:	f003 fe17 	bl	8006154 <HAL_GetTick>
+ 8002526:	4603      	mov	r3, r0
+ 8002528:	4a7c      	ldr	r2, [pc, #496]	@ (800271c <main+0xb3c>)
+ 800252a:	6013      	str	r3, [r2, #0]
+ 800252c:	e013      	b.n	8002556 <main+0x976>
+        }
+      }
+      else
+      {
+        if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms)
+ 800252e:	f003 fe11 	bl	8006154 <HAL_GetTick>
+ 8002532:	4602      	mov	r2, r0
+ 8002534:	4b79      	ldr	r3, [pc, #484]	@ (800271c <main+0xb3c>)
+ 8002536:	681b      	ldr	r3, [r3, #0]
+ 8002538:	1ad3      	subs	r3, r2, r3
+ 800253a:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
+ 800253e:	d30a      	bcc.n	8002556 <main+0x976>
+        {
+          sedang_bergerak = true;
+ 8002540:	4b75      	ldr	r3, [pc, #468]	@ (8002718 <main+0xb38>)
+ 8002542:	2201      	movs	r2, #1
+ 8002544:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002546:	f003 fe05 	bl	8006154 <HAL_GetTick>
+ 800254a:	4603      	mov	r3, r0
+ 800254c:	4a73      	ldr	r2, [pc, #460]	@ (800271c <main+0xb3c>)
+ 800254e:	6013      	str	r3, [r2, #0]
+          printf("Melanjutkan gerak maju...\r\n");
+ 8002550:	4874      	ldr	r0, [pc, #464]	@ (8002724 <main+0xb44>)
+ 8002552:	f009 fb2b 	bl	800bbac <puts>
+        }
+      } // Jika sedang dalam periode gerak, lakukan wall following
+      if (sedang_bergerak)
+ 8002556:	4b70      	ldr	r3, [pc, #448]	@ (8002718 <main+0xb38>)
+ 8002558:	781b      	ldrb	r3, [r3, #0]
+ 800255a:	2b00      	cmp	r3, #0
+ 800255c:	f001 8072 	beq.w	8003644 <main+0x1a64>
+      {
+        // Kita asumsikan robot lurus dan hanya fokus pada gerak maju.
+        // Motor_Forward(kecepatan_motor);
+
+        if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan)
+ 8002560:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8002564:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002568:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 800256c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002570:	dc08      	bgt.n	8002584 <main+0x9a4>
+ 8002572:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8002576:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 800257a:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 800257e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002582:	dd04      	ble.n	800258e <main+0x9ae>
+        {
+          Motor_Forward(kecepatan_motor);
+ 8002584:	2017      	movs	r0, #23
+ 8002586:	f002 fb97 	bl	8004cb8 <Motor_Forward>
+          // Target tercapai, berhenti
+          Motor_Stop_All();
+          HAL_Delay(2000);
+        }
+      }
+      break;
+ 800258a:	f001 b85b 	b.w	8003644 <main+0x1a64>
+          Motor_Stop_All();
+ 800258e:	f001 fffb 	bl	8004588 <Motor_Stop_All>
+          HAL_Delay(2000);
+ 8002592:	f44f 60fa 	mov.w	r0, #2000	@ 0x7d0
+ 8002596:	f003 fde9 	bl	800616c <HAL_Delay>
+      break;
+ 800259a:	f001 b853 	b.w	8003644 <main+0x1a64>
+      //            }
+      //            break;
+
+    case STATE_LINTASAN_1_MUNDUR_DARI_DEPAN:
+      // Tujuan: Mundur sampai jarak tertentu
+      if (sensor_a < jarak_stop_depan || sensor_b < jarak_stop_depan)
+ 800259e:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 80025a2:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 80025a6:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80025aa:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80025ae:	d408      	bmi.n	80025c2 <main+0x9e2>
+ 80025b0:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 80025b4:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 80025b8:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80025bc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80025c0:	d504      	bpl.n	80025cc <main+0x9ec>
+      {
+        // Masih terlalu dekat, lanjutkan mundur
+        Motor_Reverse(kecepatan_motor);
+ 80025c2:	2017      	movs	r0, #23
+ 80025c4:	f002 fb97 	bl	8004cf6 <Motor_Reverse>
+        keadaan_robot = STATE_LINTASAN_1_PUTAR_KIRI;
+        waktu_mulai_putar_90 = HAL_GetTick(); // Mulai timer timeout untuk putaran
+
+        HAL_Delay(1500);
+      }
+      break;
+ 80025c8:	f001 b847 	b.w	800365a <main+0x1a7a>
+        Motor_Stop_All();
+ 80025cc:	f001 ffdc 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Posisi mundur aman tercapai, lanjut putar kiri.\r\n");
+ 80025d0:	4855      	ldr	r0, [pc, #340]	@ (8002728 <main+0xb48>)
+ 80025d2:	f009 faeb 	bl	800bbac <puts>
+        printf("Yaw angle di-reset ke 0.\r\n");
+ 80025d6:	4855      	ldr	r0, [pc, #340]	@ (800272c <main+0xb4c>)
+ 80025d8:	f009 fae8 	bl	800bbac <puts>
+        yawAngle_deg = 0.0f;      // RESET YAW SEBELUM PINDAH STATE
+ 80025dc:	4b54      	ldr	r3, [pc, #336]	@ (8002730 <main+0xb50>)
+ 80025de:	f04f 0200 	mov.w	r2, #0
+ 80025e2:	601a      	str	r2, [r3, #0]
+        lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
+ 80025e4:	f003 fdb6 	bl	8006154 <HAL_GetTick>
+ 80025e8:	4603      	mov	r3, r0
+ 80025ea:	4a52      	ldr	r2, [pc, #328]	@ (8002734 <main+0xb54>)
+ 80025ec:	6013      	str	r3, [r2, #0]
+        keadaan_robot = STATE_LINTASAN_1_PUTAR_KIRI;
+ 80025ee:	4b49      	ldr	r3, [pc, #292]	@ (8002714 <main+0xb34>)
+ 80025f0:	2206      	movs	r2, #6
+ 80025f2:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_90 = HAL_GetTick(); // Mulai timer timeout untuk putaran
+ 80025f4:	f003 fdae 	bl	8006154 <HAL_GetTick>
+ 80025f8:	4603      	mov	r3, r0
+ 80025fa:	4a4f      	ldr	r2, [pc, #316]	@ (8002738 <main+0xb58>)
+ 80025fc:	6013      	str	r3, [r2, #0]
+        HAL_Delay(1500);
+ 80025fe:	f240 50dc 	movw	r0, #1500	@ 0x5dc
+ 8002602:	f003 fdb3 	bl	800616c <HAL_Delay>
+      break;
+ 8002606:	f001 b828 	b.w	800365a <main+0x1a7a>
+      //
+      //            }
+      //            break;
+
+      // Timeout protection - maksimal 10 detik untuk putar 180
+      if (HAL_GetTick() - waktu_mulai_putar_90 > 10000)
+ 800260a:	f003 fda3 	bl	8006154 <HAL_GetTick>
+ 800260e:	4602      	mov	r2, r0
+ 8002610:	4b49      	ldr	r3, [pc, #292]	@ (8002738 <main+0xb58>)
+ 8002612:	681b      	ldr	r3, [r3, #0]
+ 8002614:	1ad3      	subs	r3, r2, r3
+ 8002616:	f242 7210 	movw	r2, #10000	@ 0x2710
+ 800261a:	4293      	cmp	r3, r2
+ 800261c:	d914      	bls.n	8002648 <main+0xa68>
+      {
+        Motor_Stop_All();
+ 800261e:	f001 ffb3 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L1: Timeout putar 90° (5 detik), paksa lanjut!\r\n");
+ 8002622:	4846      	ldr	r0, [pc, #280]	@ (800273c <main+0xb5c>)
+ 8002624:	f009 fac2 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_1_KOREKSI_LURUS;
+ 8002628:	4b3a      	ldr	r3, [pc, #232]	@ (8002714 <main+0xb34>)
+ 800262a:	2207      	movs	r2, #7
+ 800262c:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 800262e:	f003 fd91 	bl	8006154 <HAL_GetTick>
+ 8002632:	4603      	mov	r3, r0
+ 8002634:	4a42      	ldr	r2, [pc, #264]	@ (8002740 <main+0xb60>)
+ 8002636:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8002638:	4b42      	ldr	r3, [pc, #264]	@ (8002744 <main+0xb64>)
+ 800263a:	2200      	movs	r2, #0
+ 800263c:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_90 = 0;
+ 800263e:	4b3e      	ldr	r3, [pc, #248]	@ (8002738 <main+0xb58>)
+ 8002640:	2200      	movs	r2, #0
+ 8002642:	601a      	str	r2, [r3, #0]
+        break;
+ 8002644:	f001 b809 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
+      if (yawAngle_deg > 90.0f)
+ 8002648:	4b39      	ldr	r3, [pc, #228]	@ (8002730 <main+0xb50>)
+ 800264a:	edd3 7a00 	vldr	s15, [r3]
+ 800264e:	ed9f 7a3e 	vldr	s14, [pc, #248]	@ 8002748 <main+0xb68>
+ 8002652:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002656:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800265a:	dd22      	ble.n	80026a2 <main+0xac2>
+      {
+        // Sudah putar 90° (meskipun belum tentu lurus)
+        Motor_Stop_All();
+ 800265c:	f001 ff94 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L1: Putaran 90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
+ 8002660:	4b33      	ldr	r3, [pc, #204]	@ (8002730 <main+0xb50>)
+ 8002662:	681b      	ldr	r3, [r3, #0]
+ 8002664:	4618      	mov	r0, r3
+ 8002666:	f7fd ff6f 	bl	8000548 <__aeabi_f2d>
+ 800266a:	4602      	mov	r2, r0
+ 800266c:	460b      	mov	r3, r1
+ 800266e:	4837      	ldr	r0, [pc, #220]	@ (800274c <main+0xb6c>)
+ 8002670:	f009 fa34 	bl	800badc <iprintf>
+        HAL_Delay(500);
+ 8002674:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8002678:	f003 fd78 	bl	800616c <HAL_Delay>
+
+        // Transisi ke koreksi lurus dengan sensor belakang
+        printf("STATE L1: Masuk koreksi lurus dengan sensor belakang.\r\n");
+ 800267c:	4834      	ldr	r0, [pc, #208]	@ (8002750 <main+0xb70>)
+ 800267e:	f009 fa95 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_1_KOREKSI_LURUS;
+ 8002682:	4b24      	ldr	r3, [pc, #144]	@ (8002714 <main+0xb34>)
+ 8002684:	2207      	movs	r2, #7
+ 8002686:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 8002688:	f003 fd64 	bl	8006154 <HAL_GetTick>
+ 800268c:	4603      	mov	r3, r0
+ 800268e:	4a2c      	ldr	r2, [pc, #176]	@ (8002740 <main+0xb60>)
+ 8002690:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8002692:	4b2c      	ldr	r3, [pc, #176]	@ (8002744 <main+0xb64>)
+ 8002694:	2200      	movs	r2, #0
+ 8002696:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_90 = 0;
+ 8002698:	4b27      	ldr	r3, [pc, #156]	@ (8002738 <main+0xb58>)
+ 800269a:	2200      	movs	r2, #0
+ 800269c:	601a      	str	r2, [r3, #0]
+        {
+          printf("Putar Yaw=%.1f° \r\n", yawAngle_deg);
+          last_debug_print = HAL_GetTick();
+        }
+      }
+      break;
+ 800269e:	f000 bfd3 	b.w	8003648 <main+0x1a68>
+        Motor_Rotate_Left(30);
+ 80026a2:	201e      	movs	r0, #30
+ 80026a4:	f002 fb49 	bl	8004d3a <Motor_Rotate_Left>
+        if (HAL_GetTick() - last_debug_print > 500)
+ 80026a8:	f003 fd54 	bl	8006154 <HAL_GetTick>
+ 80026ac:	4602      	mov	r2, r0
+ 80026ae:	4b29      	ldr	r3, [pc, #164]	@ (8002754 <main+0xb74>)
+ 80026b0:	681b      	ldr	r3, [r3, #0]
+ 80026b2:	1ad3      	subs	r3, r2, r3
+ 80026b4:	f5b3 7ffa 	cmp.w	r3, #500	@ 0x1f4
+ 80026b8:	f240 87c6 	bls.w	8003648 <main+0x1a68>
+          printf("Putar Yaw=%.1f° \r\n", yawAngle_deg);
+ 80026bc:	4b1c      	ldr	r3, [pc, #112]	@ (8002730 <main+0xb50>)
+ 80026be:	681b      	ldr	r3, [r3, #0]
+ 80026c0:	4618      	mov	r0, r3
+ 80026c2:	f7fd ff41 	bl	8000548 <__aeabi_f2d>
+ 80026c6:	4602      	mov	r2, r0
+ 80026c8:	460b      	mov	r3, r1
+ 80026ca:	4823      	ldr	r0, [pc, #140]	@ (8002758 <main+0xb78>)
+ 80026cc:	f009 fa06 	bl	800badc <iprintf>
+          last_debug_print = HAL_GetTick();
+ 80026d0:	f003 fd40 	bl	8006154 <HAL_GetTick>
+ 80026d4:	4603      	mov	r3, r0
+ 80026d6:	4a1f      	ldr	r2, [pc, #124]	@ (8002754 <main+0xb74>)
+ 80026d8:	6013      	str	r3, [r2, #0]
+      break;
+ 80026da:	f000 bfb5 	b.w	8003648 <main+0x1a68>
+
+    case STATE_LINTASAN_1_KOREKSI_LURUS:
+      // Timeout check - maksimal 5 detik untuk koreksi
+      if (HAL_GetTick() - waktu_mulai_koreksi > 5000)
+ 80026de:	f003 fd39 	bl	8006154 <HAL_GetTick>
+ 80026e2:	4602      	mov	r2, r0
+ 80026e4:	4b16      	ldr	r3, [pc, #88]	@ (8002740 <main+0xb60>)
+ 80026e6:	681b      	ldr	r3, [r3, #0]
+ 80026e8:	1ad3      	subs	r3, r2, r3
+ 80026ea:	f241 3288 	movw	r2, #5000	@ 0x1388
+ 80026ee:	4293      	cmp	r3, r2
+ 80026f0:	d938      	bls.n	8002764 <main+0xb84>
+      {
+        Motor_Stop_All();
+ 80026f2:	f001 ff49 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Timeout koreksi lurus (5 detik), paksa lanjut.\r\n");
+ 80026f6:	4819      	ldr	r0, [pc, #100]	@ (800275c <main+0xb7c>)
+ 80026f8:	f009 fa58 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_1_MANUVER_BELAKANG;
+ 80026fc:	4b05      	ldr	r3, [pc, #20]	@ (8002714 <main+0xb34>)
+ 80026fe:	2208      	movs	r2, #8
+ 8002700:	701a      	strb	r2, [r3, #0]
+        break;
+ 8002702:	f000 bfaa 	b.w	800365a <main+0x1a7a>
+ 8002706:	bf00      	nop
+ 8002708:	08010354 	.word	0x08010354
+ 800270c:	08010384 	.word	0x08010384
+ 8002710:	080103a8 	.word	0x080103a8
+ 8002714:	20000750 	.word	0x20000750
+ 8002718:	20000758 	.word	0x20000758
+ 800271c:	20000754 	.word	0x20000754
+ 8002720:	20000751 	.word	0x20000751
+ 8002724:	080103e0 	.word	0x080103e0
+ 8002728:	080103fc 	.word	0x080103fc
+ 800272c:	08010434 	.word	0x08010434
+ 8002730:	200007d0 	.word	0x200007d0
+ 8002734:	200007d4 	.word	0x200007d4
+ 8002738:	20000768 	.word	0x20000768
+ 800273c:	08010450 	.word	0x08010450
+ 8002740:	2000075c 	.word	0x2000075c
+ 8002744:	20000760 	.word	0x20000760
+ 8002748:	42b40000 	.word	0x42b40000
+ 800274c:	08010488 	.word	0x08010488
+ 8002750:	080104bc 	.word	0x080104bc
+ 8002754:	200007e0 	.word	0x200007e0
+ 8002758:	080104f4 	.word	0x080104f4
+ 800275c:	08010508 	.word	0x08010508
+ 8002760:	42480000 	.word	0x42480000
+      }
+
+      // Validasi: Pastikan sensor samping kanan (G & H) mendeteksi dinding
+      if ((sensor_g > 0 && sensor_g < 50) && (sensor_h > 0 && sensor_h < 50))
+ 8002764:	edd7 7a0a 	vldr	s15, [r7, #40]	@ 0x28
+ 8002768:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 800276c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002770:	f340 80bb 	ble.w	80028ea <main+0xd0a>
+ 8002774:	edd7 7a0a 	vldr	s15, [r7, #40]	@ 0x28
+ 8002778:	ed1f 7a07 	vldr	s14, [pc, #-28]	@ 8002760 <main+0xb80>
+ 800277c:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002780:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002784:	f140 80b1 	bpl.w	80028ea <main+0xd0a>
+ 8002788:	edd7 7a09 	vldr	s15, [r7, #36]	@ 0x24
+ 800278c:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 8002790:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002794:	f340 80a9 	ble.w	80028ea <main+0xd0a>
+ 8002798:	edd7 7a09 	vldr	s15, [r7, #36]	@ 0x24
+ 800279c:	ed1f 7a10 	vldr	s14, [pc, #-64]	@ 8002760 <main+0xb80>
+ 80027a0:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80027a4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80027a8:	f140 809f 	bpl.w	80028ea <main+0xd0a>
+      {
+
+        float selisih_samping = fabs(sensor_h - sensor_g);
+ 80027ac:	ed97 7a09 	vldr	s14, [r7, #36]	@ 0x24
+ 80027b0:	edd7 7a0a 	vldr	s15, [r7, #40]	@ 0x28
+ 80027b4:	ee77 7a67 	vsub.f32	s15, s14, s15
+ 80027b8:	eef0 7ae7 	vabs.f32	s15, s15
+ 80027bc:	edc7 7a02 	vstr	s15, [r7, #8]
+
+        if (selisih_samping > 0.5f)
+ 80027c0:	edd7 7a02 	vldr	s15, [r7, #8]
+ 80027c4:	eeb6 7a00 	vmov.f32	s14, #96	@ 0x3f000000  0.5
+ 80027c8:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80027cc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80027d0:	dd53      	ble.n	800287a <main+0xc9a>
+        {
+          // Robot belum lurus, perlu koreksi
+          counter_koreksi_stabil = 0; // Reset counter stabilitas
+ 80027d2:	4bb9      	ldr	r3, [pc, #740]	@ (8002ab8 <main+0xed8>)
+ 80027d4:	2200      	movs	r2, #0
+ 80027d6:	701a      	strb	r2, [r3, #0]
+
+          if (sensor_h > sensor_g)
+ 80027d8:	ed97 7a09 	vldr	s14, [r7, #36]	@ 0x24
+ 80027dc:	edd7 7a0a 	vldr	s15, [r7, #40]	@ 0x28
+ 80027e0:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 80027e4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80027e8:	dd23      	ble.n	8002832 <main+0xc52>
+          {
+            // Kondisi: Bagian DEPAN robot lebih jauh dari dinding kanan
+            // Artinya: Ekor robot lebih dekat ke dinding (robot miring ke kiri)
+            // Solusi: Putar KANAN untuk meluruskan
+            printf("Koreksi: Putar kanan | H:%.1f > G:%.1f | Diff:%.1f\r\n",
+ 80027ea:	6a78      	ldr	r0, [r7, #36]	@ 0x24
+ 80027ec:	f7fd feac 	bl	8000548 <__aeabi_f2d>
+ 80027f0:	4680      	mov	r8, r0
+ 80027f2:	4689      	mov	r9, r1
+ 80027f4:	6ab8      	ldr	r0, [r7, #40]	@ 0x28
+ 80027f6:	f7fd fea7 	bl	8000548 <__aeabi_f2d>
+ 80027fa:	4604      	mov	r4, r0
+ 80027fc:	460d      	mov	r5, r1
+ 80027fe:	68b8      	ldr	r0, [r7, #8]
+ 8002800:	f7fd fea2 	bl	8000548 <__aeabi_f2d>
+ 8002804:	4602      	mov	r2, r0
+ 8002806:	460b      	mov	r3, r1
+ 8002808:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 800280c:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002810:	4642      	mov	r2, r8
+ 8002812:	464b      	mov	r3, r9
+ 8002814:	48a9      	ldr	r0, [pc, #676]	@ (8002abc <main+0xedc>)
+ 8002816:	f009 f961 	bl	800badc <iprintf>
+                   sensor_h, sensor_g, selisih_samping);
+            Motor_Rotate_Right(25);
+ 800281a:	2019      	movs	r0, #25
+ 800281c:	f002 fab9 	bl	8004d92 <Motor_Rotate_Right>
+            HAL_Delay(100);
+ 8002820:	2064      	movs	r0, #100	@ 0x64
+ 8002822:	f003 fca3 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 8002826:	f001 feaf 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 800282a:	2032      	movs	r0, #50	@ 0x32
+ 800282c:	f003 fc9e 	bl	800616c <HAL_Delay>
+      {
+ 8002830:	e076      	b.n	8002920 <main+0xd40>
+          else
+          {
+            // Kondisi: Bagian BELAKANG robot lebih jauh dari dinding kanan
+            // Artinya: Kepala robot lebih dekat ke dinding (robot miring ke kanan)
+            // Solusi: Putar KIRI untuk meluruskan
+            printf("Koreksi: Putar kiri | G:%.1f > H:%.1f | Diff:%.1f\r\n",
+ 8002832:	6ab8      	ldr	r0, [r7, #40]	@ 0x28
+ 8002834:	f7fd fe88 	bl	8000548 <__aeabi_f2d>
+ 8002838:	4680      	mov	r8, r0
+ 800283a:	4689      	mov	r9, r1
+ 800283c:	6a78      	ldr	r0, [r7, #36]	@ 0x24
+ 800283e:	f7fd fe83 	bl	8000548 <__aeabi_f2d>
+ 8002842:	4604      	mov	r4, r0
+ 8002844:	460d      	mov	r5, r1
+ 8002846:	68b8      	ldr	r0, [r7, #8]
+ 8002848:	f7fd fe7e 	bl	8000548 <__aeabi_f2d>
+ 800284c:	4602      	mov	r2, r0
+ 800284e:	460b      	mov	r3, r1
+ 8002850:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8002854:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002858:	4642      	mov	r2, r8
+ 800285a:	464b      	mov	r3, r9
+ 800285c:	4898      	ldr	r0, [pc, #608]	@ (8002ac0 <main+0xee0>)
+ 800285e:	f009 f93d 	bl	800badc <iprintf>
+                   sensor_g, sensor_h, selisih_samping);
+            Motor_Rotate_Left(25);
+ 8002862:	2019      	movs	r0, #25
+ 8002864:	f002 fa69 	bl	8004d3a <Motor_Rotate_Left>
+            HAL_Delay(100);
+ 8002868:	2064      	movs	r0, #100	@ 0x64
+ 800286a:	f003 fc7f 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 800286e:	f001 fe8b 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 8002872:	2032      	movs	r0, #50	@ 0x32
+ 8002874:	f003 fc7a 	bl	800616c <HAL_Delay>
+      {
+ 8002878:	e052      	b.n	8002920 <main+0xd40>
+          }
+        }
+        else
+        {
+          // Robot sudah cukup lurus (selisih <= 0.5cm)
+          counter_koreksi_stabil++;
+ 800287a:	4b8f      	ldr	r3, [pc, #572]	@ (8002ab8 <main+0xed8>)
+ 800287c:	781b      	ldrb	r3, [r3, #0]
+ 800287e:	3301      	adds	r3, #1
+ 8002880:	b2da      	uxtb	r2, r3
+ 8002882:	4b8d      	ldr	r3, [pc, #564]	@ (8002ab8 <main+0xed8>)
+ 8002884:	701a      	strb	r2, [r3, #0]
+          printf("Lurus! H:%.1f G:%.1f | Diff:%.1f | Stabil:%d/3\r\n",
+ 8002886:	6a78      	ldr	r0, [r7, #36]	@ 0x24
+ 8002888:	f7fd fe5e 	bl	8000548 <__aeabi_f2d>
+ 800288c:	4680      	mov	r8, r0
+ 800288e:	4689      	mov	r9, r1
+ 8002890:	6ab8      	ldr	r0, [r7, #40]	@ 0x28
+ 8002892:	f7fd fe59 	bl	8000548 <__aeabi_f2d>
+ 8002896:	4604      	mov	r4, r0
+ 8002898:	460d      	mov	r5, r1
+ 800289a:	68b8      	ldr	r0, [r7, #8]
+ 800289c:	f7fd fe54 	bl	8000548 <__aeabi_f2d>
+ 80028a0:	4602      	mov	r2, r0
+ 80028a2:	460b      	mov	r3, r1
+ 80028a4:	4984      	ldr	r1, [pc, #528]	@ (8002ab8 <main+0xed8>)
+ 80028a6:	7809      	ldrb	r1, [r1, #0]
+ 80028a8:	9104      	str	r1, [sp, #16]
+ 80028aa:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 80028ae:	e9cd 4500 	strd	r4, r5, [sp]
+ 80028b2:	4642      	mov	r2, r8
+ 80028b4:	464b      	mov	r3, r9
+ 80028b6:	4883      	ldr	r0, [pc, #524]	@ (8002ac4 <main+0xee4>)
+ 80028b8:	f009 f910 	bl	800badc <iprintf>
+                 sensor_h, sensor_g, selisih_samping, counter_koreksi_stabil);
+
+          if (counter_koreksi_stabil >= 3)
+ 80028bc:	4b7e      	ldr	r3, [pc, #504]	@ (8002ab8 <main+0xed8>)
+ 80028be:	781b      	ldrb	r3, [r3, #0]
+ 80028c0:	2b02      	cmp	r3, #2
+ 80028c2:	d90c      	bls.n	80028de <main+0xcfe>
+          {
+            // Validasi: Sudah lurus 3x pembacaan berturut-turut
+            Motor_Stop_All();
+ 80028c4:	f001 fe60 	bl	8004588 <Motor_Stop_All>
+            printf("STATE: Koreksi lurus SELESAI! Lanjut manuver belakang.\r\n");
+ 80028c8:	487f      	ldr	r0, [pc, #508]	@ (8002ac8 <main+0xee8>)
+ 80028ca:	f009 f96f 	bl	800bbac <puts>
+            HAL_Delay(1000);
+ 80028ce:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 80028d2:	f003 fc4b 	bl	800616c <HAL_Delay>
+            keadaan_robot = STATE_LINTASAN_1_MANUVER_BELAKANG;
+ 80028d6:	4b7d      	ldr	r3, [pc, #500]	@ (8002acc <main+0xeec>)
+ 80028d8:	2208      	movs	r2, #8
+ 80028da:	701a      	strb	r2, [r3, #0]
+      {
+ 80028dc:	e020      	b.n	8002920 <main+0xd40>
+          }
+          else
+          {
+            // Tunggu pembacaan sensor berikutnya untuk validasi
+            Motor_Stop_All();
+ 80028de:	f001 fe53 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(100);
+ 80028e2:	2064      	movs	r0, #100	@ 0x64
+ 80028e4:	f003 fc42 	bl	800616c <HAL_Delay>
+      {
+ 80028e8:	e01a      	b.n	8002920 <main+0xd40>
+        }
+      }
+      else
+      {
+        // Sensor samping kanan tidak mendeteksi dinding (nilai 0 atau > 50cm)
+        printf("Warning: Dinding samping kanan tidak terdeteksi (G:%.1f H:%.1f)\r\n",
+ 80028ea:	6ab8      	ldr	r0, [r7, #40]	@ 0x28
+ 80028ec:	f7fd fe2c 	bl	8000548 <__aeabi_f2d>
+ 80028f0:	4604      	mov	r4, r0
+ 80028f2:	460d      	mov	r5, r1
+ 80028f4:	6a78      	ldr	r0, [r7, #36]	@ 0x24
+ 80028f6:	f7fd fe27 	bl	8000548 <__aeabi_f2d>
+ 80028fa:	4602      	mov	r2, r0
+ 80028fc:	460b      	mov	r3, r1
+ 80028fe:	e9cd 2300 	strd	r2, r3, [sp]
+ 8002902:	4622      	mov	r2, r4
+ 8002904:	462b      	mov	r3, r5
+ 8002906:	4872      	ldr	r0, [pc, #456]	@ (8002ad0 <main+0xef0>)
+ 8002908:	f009 f8e8 	bl	800badc <iprintf>
+               sensor_g, sensor_h);
+        printf("STATE: Skip koreksi, langsung ke manuver belakang.\r\n");
+ 800290c:	4871      	ldr	r0, [pc, #452]	@ (8002ad4 <main+0xef4>)
+ 800290e:	f009 f94d 	bl	800bbac <puts>
+        Motor_Stop_All();
+ 8002912:	f001 fe39 	bl	8004588 <Motor_Stop_All>
+        keadaan_robot = STATE_LINTASAN_1_MANUVER_BELAKANG;
+ 8002916:	4b6d      	ldr	r3, [pc, #436]	@ (8002acc <main+0xeec>)
+ 8002918:	2208      	movs	r2, #8
+ 800291a:	701a      	strb	r2, [r3, #0]
+      }
+      break;
+ 800291c:	f000 be9d 	b.w	800365a <main+0x1a7a>
+ 8002920:	f000 be9b 	b.w	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_1_MANUVER_BELAKANG:
+      // Tujuan: Mundur pelan sampai jarak belakang < batas_jarak_belakang (5cm)
+      if (sensor_e > batas_jarak_belakang && sensor_f > batas_jarak_belakang)
+ 8002924:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 8002928:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 800292c:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002930:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002934:	dd0d      	ble.n	8002952 <main+0xd72>
+ 8002936:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 800293a:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 800293e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002942:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002946:	dd04      	ble.n	8002952 <main+0xd72>
+      {
+        // Masih jauh, lanjutkan mundur pelan
+        Motor_Reverse(kecepatan_motor);
+ 8002948:	2017      	movs	r0, #23
+ 800294a:	f002 f9d4 	bl	8004cf6 <Motor_Reverse>
+
+        // Simpan state tujuan, lalu trigger capture
+        state_selanjutnya_setelah_capture = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
+        keadaan_robot = STATE_TRIGGER_CAPTURE;
+      }
+      break;
+ 800294e:	f000 be84 	b.w	800365a <main+0x1a7a>
+        Motor_Stop_All();
+ 8002952:	f001 fe19 	bl	8004588 <Motor_Stop_All>
+        printf("Mentok belakang tercapai. Capture #2 (Belakang)!\r\n");
+ 8002956:	4860      	ldr	r0, [pc, #384]	@ (8002ad8 <main+0xef8>)
+ 8002958:	f009 f928 	bl	800bbac <puts>
+        state_selanjutnya_setelah_capture = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
+ 800295c:	4b5f      	ldr	r3, [pc, #380]	@ (8002adc <main+0xefc>)
+ 800295e:	2209      	movs	r2, #9
+ 8002960:	701a      	strb	r2, [r3, #0]
+        keadaan_robot = STATE_TRIGGER_CAPTURE;
+ 8002962:	4b5a      	ldr	r3, [pc, #360]	@ (8002acc <main+0xeec>)
+ 8002964:	2202      	movs	r2, #2
+ 8002966:	701a      	strb	r2, [r3, #0]
+      break;
+ 8002968:	f000 be77 	b.w	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_1_MAJU_DARI_BELAKANG:
+      // Tujuan: Maju sampai sensor belakang (e dan f) membaca jarak > jarak_stop_belakang (30cm)
+      if (sensor_e < jarak_stop_belakang || sensor_f < jarak_stop_belakang)
+ 800296c:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 8002970:	eeb3 7a0e 	vmov.f32	s14, #62	@ 0x41f00000  30.0
+ 8002974:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002978:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800297c:	d408      	bmi.n	8002990 <main+0xdb0>
+ 800297e:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002982:	eeb3 7a0e 	vmov.f32	s14, #62	@ 0x41f00000  30.0
+ 8002986:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 800298a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800298e:	d504      	bpl.n	800299a <main+0xdba>
+      {
+        // Masih terlalu dekat dengan dinding belakang, lanjutkan maju
+        Motor_Forward(kecepatan_motor);
+ 8002990:	2017      	movs	r0, #23
+ 8002992:	f002 f991 	bl	8004cb8 <Motor_Forward>
+        state_selanjutnya_setelah_capture = STATE_LINTASAN_2_MAJU;
+        keadaan_robot = STATE_TRIGGER_CAPTURE;
+        waktu_terakhir_gerak = HAL_GetTick();
+        sedang_bergerak = true;
+      }
+      break;
+ 8002996:	f000 be60 	b.w	800365a <main+0x1a7a>
+        Motor_Stop_All();
+ 800299a:	f001 fdf5 	bl	8004588 <Motor_Stop_All>
+        state_selanjutnya_setelah_capture = STATE_LINTASAN_2_MAJU;
+ 800299e:	4b4f      	ldr	r3, [pc, #316]	@ (8002adc <main+0xefc>)
+ 80029a0:	220a      	movs	r2, #10
+ 80029a2:	701a      	strb	r2, [r3, #0]
+        keadaan_robot = STATE_TRIGGER_CAPTURE;
+ 80029a4:	4b49      	ldr	r3, [pc, #292]	@ (8002acc <main+0xeec>)
+ 80029a6:	2202      	movs	r2, #2
+ 80029a8:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 80029aa:	f003 fbd3 	bl	8006154 <HAL_GetTick>
+ 80029ae:	4603      	mov	r3, r0
+ 80029b0:	4a4b      	ldr	r2, [pc, #300]	@ (8002ae0 <main+0xf00>)
+ 80029b2:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = true;
+ 80029b4:	4b4b      	ldr	r3, [pc, #300]	@ (8002ae4 <main+0xf04>)
+ 80029b6:	2201      	movs	r2, #1
+ 80029b8:	701a      	strb	r2, [r3, #0]
+      break;
+ 80029ba:	f000 be4e 	b.w	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_2_MAJU:
+      // Cek kondisi transisi state: jika ada halangan di depan
+      if (ada_halangan_depan)
+ 80029be:	7efb      	ldrb	r3, [r7, #27]
+ 80029c0:	2b00      	cmp	r3, #0
+ 80029c2:	d009      	beq.n	80029d8 <main+0xdf8>
+      {
+        Motor_Stop_All();
+ 80029c4:	f001 fde0 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L2: Halangan depan terdeteksi. Mundur sedikit.\r\n");
+ 80029c8:	4847      	ldr	r0, [pc, #284]	@ (8002ae8 <main+0xf08>)
+ 80029ca:	f009 f8ef 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_2_MUNDUR_SEBENTAR;
+ 80029ce:	4b3f      	ldr	r3, [pc, #252]	@ (8002acc <main+0xeec>)
+ 80029d0:	220b      	movs	r2, #11
+ 80029d2:	701a      	strb	r2, [r3, #0]
+        break;
+ 80029d4:	f000 be41 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Logika gerak 2 detik jalan, 1 detik berhenti
+      if (sedang_bergerak)
+ 80029d8:	4b42      	ldr	r3, [pc, #264]	@ (8002ae4 <main+0xf04>)
+ 80029da:	781b      	ldrb	r3, [r3, #0]
+ 80029dc:	2b00      	cmp	r3, #0
+ 80029de:	d01b      	beq.n	8002a18 <main+0xe38>
+      {
+        if (HAL_GetTick() - waktu_terakhir_gerak >= delay_jalan_ms)
+ 80029e0:	f003 fbb8 	bl	8006154 <HAL_GetTick>
+ 80029e4:	4602      	mov	r2, r0
+ 80029e6:	4b3e      	ldr	r3, [pc, #248]	@ (8002ae0 <main+0xf00>)
+ 80029e8:	681b      	ldr	r3, [r3, #0]
+ 80029ea:	1ad3      	subs	r3, r2, r3
+ 80029ec:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
+ 80029f0:	d326      	bcc.n	8002a40 <main+0xe60>
+        {
+          Motor_Stop_All();
+ 80029f2:	f001 fdc9 	bl	8004588 <Motor_Stop_All>
+
+          // Simpan state tujuan, lalu trigger capture
+          state_selanjutnya_setelah_capture = keadaan_robot; // Kembali ke state ini setelah capture
+ 80029f6:	4b35      	ldr	r3, [pc, #212]	@ (8002acc <main+0xeec>)
+ 80029f8:	781b      	ldrb	r3, [r3, #0]
+ 80029fa:	b2da      	uxtb	r2, r3
+ 80029fc:	4b37      	ldr	r3, [pc, #220]	@ (8002adc <main+0xefc>)
+ 80029fe:	701a      	strb	r2, [r3, #0]
+          keadaan_robot = STATE_TRIGGER_CAPTURE;
+ 8002a00:	4b32      	ldr	r3, [pc, #200]	@ (8002acc <main+0xeec>)
+ 8002a02:	2202      	movs	r2, #2
+ 8002a04:	701a      	strb	r2, [r3, #0]
+          sedang_bergerak = false;
+ 8002a06:	4b37      	ldr	r3, [pc, #220]	@ (8002ae4 <main+0xf04>)
+ 8002a08:	2200      	movs	r2, #0
+ 8002a0a:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002a0c:	f003 fba2 	bl	8006154 <HAL_GetTick>
+ 8002a10:	4603      	mov	r3, r0
+ 8002a12:	4a33      	ldr	r2, [pc, #204]	@ (8002ae0 <main+0xf00>)
+ 8002a14:	6013      	str	r3, [r2, #0]
+ 8002a16:	e013      	b.n	8002a40 <main+0xe60>
+        }
+      }
+      else
+      {
+        if (HAL_GetTick() - waktu_terakhir_gerak >= delay_berhenti_ms)
+ 8002a18:	f003 fb9c 	bl	8006154 <HAL_GetTick>
+ 8002a1c:	4602      	mov	r2, r0
+ 8002a1e:	4b30      	ldr	r3, [pc, #192]	@ (8002ae0 <main+0xf00>)
+ 8002a20:	681b      	ldr	r3, [r3, #0]
+ 8002a22:	1ad3      	subs	r3, r2, r3
+ 8002a24:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
+ 8002a28:	d30a      	bcc.n	8002a40 <main+0xe60>
+        {
+          sedang_bergerak = true;
+ 8002a2a:	4b2e      	ldr	r3, [pc, #184]	@ (8002ae4 <main+0xf04>)
+ 8002a2c:	2201      	movs	r2, #1
+ 8002a2e:	701a      	strb	r2, [r3, #0]
+          waktu_terakhir_gerak = HAL_GetTick();
+ 8002a30:	f003 fb90 	bl	8006154 <HAL_GetTick>
+ 8002a34:	4603      	mov	r3, r0
+ 8002a36:	4a2a      	ldr	r2, [pc, #168]	@ (8002ae0 <main+0xf00>)
+ 8002a38:	6013      	str	r3, [r2, #0]
+          printf("Melanjutkan gerak maju (L2)...\r\n");
+ 8002a3a:	482c      	ldr	r0, [pc, #176]	@ (8002aec <main+0xf0c>)
+ 8002a3c:	f009 f8b6 	bl	800bbac <puts>
+        }
+      }
+
+      // Jika sedang dalam periode gerak, lakukan wall following
+      if (sedang_bergerak)
+ 8002a40:	4b28      	ldr	r3, [pc, #160]	@ (8002ae4 <main+0xf04>)
+ 8002a42:	781b      	ldrb	r3, [r3, #0]
+ 8002a44:	2b00      	cmp	r3, #0
+ 8002a46:	f000 8601 	beq.w	800364c <main+0x1a6c>
+      {
+        if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan)
+ 8002a4a:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8002a4e:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002a52:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002a56:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002a5a:	dc08      	bgt.n	8002a6e <main+0xe8e>
+ 8002a5c:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8002a60:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002a64:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002a68:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002a6c:	dd04      	ble.n	8002a78 <main+0xe98>
+        {
+          Motor_Forward(kecepatan_motor);
+ 8002a6e:	2017      	movs	r0, #23
+ 8002a70:	f002 f922 	bl	8004cb8 <Motor_Forward>
+          // Target tercapai, berhenti
+          Motor_Stop_All();
+          HAL_Delay(2000);
+        }
+      }
+      break;
+ 8002a74:	f000 bdea 	b.w	800364c <main+0x1a6c>
+          Motor_Stop_All();
+ 8002a78:	f001 fd86 	bl	8004588 <Motor_Stop_All>
+          HAL_Delay(2000);
+ 8002a7c:	f44f 60fa 	mov.w	r0, #2000	@ 0x7d0
+ 8002a80:	f003 fb74 	bl	800616c <HAL_Delay>
+      break;
+ 8002a84:	f000 bde2 	b.w	800364c <main+0x1a6c>
+
+    case STATE_LINTASAN_2_MUNDUR_SEBENTAR:
+      // Mundur hingga jarak depan > 20cm
+      if (sensor_a < jarak_stop_depan || sensor_b < jarak_stop_depan)
+ 8002a88:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8002a8c:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 8002a90:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002a94:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002a98:	d408      	bmi.n	8002aac <main+0xecc>
+ 8002a9a:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8002a9e:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 8002aa2:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002aa6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002aaa:	d521      	bpl.n	8002af0 <main+0xf10>
+      {
+        Motor_Reverse(kecepatan_motor);
+ 8002aac:	2017      	movs	r0, #23
+ 8002aae:	f002 f922 	bl	8004cf6 <Motor_Reverse>
+        // FLAG-S minimum track
+        keadaan_robot = STATE_ERROR;
+        // keadaan_robot = STATE_LINTASAN_2_PUTAR_BALIK;
+        waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout+
+      }
+      break;
+ 8002ab2:	f000 bdd2 	b.w	800365a <main+0x1a7a>
+ 8002ab6:	bf00      	nop
+ 8002ab8:	20000760 	.word	0x20000760
+ 8002abc:	08010540 	.word	0x08010540
+ 8002ac0:	08010578 	.word	0x08010578
+ 8002ac4:	080105ac 	.word	0x080105ac
+ 8002ac8:	080105e0 	.word	0x080105e0
+ 8002acc:	20000750 	.word	0x20000750
+ 8002ad0:	08010618 	.word	0x08010618
+ 8002ad4:	0801065c 	.word	0x0801065c
+ 8002ad8:	08010690 	.word	0x08010690
+ 8002adc:	20000751 	.word	0x20000751
+ 8002ae0:	20000754 	.word	0x20000754
+ 8002ae4:	20000758 	.word	0x20000758
+ 8002ae8:	080106c4 	.word	0x080106c4
+ 8002aec:	080106fc 	.word	0x080106fc
+        Motor_Stop_All();
+ 8002af0:	f001 fd4a 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L2: Posisi mundur aman, siap putar 180.\r\n");
+ 8002af4:	48c5      	ldr	r0, [pc, #788]	@ (8002e0c <main+0x122c>)
+ 8002af6:	f009 f859 	bl	800bbac <puts>
+        printf("Yaw angle di-reset ke 0.\r\n");
+ 8002afa:	48c5      	ldr	r0, [pc, #788]	@ (8002e10 <main+0x1230>)
+ 8002afc:	f009 f856 	bl	800bbac <puts>
+        yawAngle_deg = 0.0f;
+ 8002b00:	4bc4      	ldr	r3, [pc, #784]	@ (8002e14 <main+0x1234>)
+ 8002b02:	f04f 0200 	mov.w	r2, #0
+ 8002b06:	601a      	str	r2, [r3, #0]
+        lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
+ 8002b08:	f003 fb24 	bl	8006154 <HAL_GetTick>
+ 8002b0c:	4603      	mov	r3, r0
+ 8002b0e:	4ac2      	ldr	r2, [pc, #776]	@ (8002e18 <main+0x1238>)
+ 8002b10:	6013      	str	r3, [r2, #0]
+        keadaan_robot = STATE_ERROR;
+ 8002b12:	4bc2      	ldr	r3, [pc, #776]	@ (8002e1c <main+0x123c>)
+ 8002b14:	2217      	movs	r2, #23
+ 8002b16:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_180 = HAL_GetTick(); // Mulai timer untuk timeout+
+ 8002b18:	f003 fb1c 	bl	8006154 <HAL_GetTick>
+ 8002b1c:	4603      	mov	r3, r0
+ 8002b1e:	4ac0      	ldr	r2, [pc, #768]	@ (8002e20 <main+0x1240>)
+ 8002b20:	6013      	str	r3, [r2, #0]
+      break;
+ 8002b22:	f000 bd9a 	b.w	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_2_PUTAR_BALIK:
+      // Timeout protection - maksimal 10 detik untuk putar 180
+      if (HAL_GetTick() - waktu_mulai_putar_180 > 10000)
+ 8002b26:	f003 fb15 	bl	8006154 <HAL_GetTick>
+ 8002b2a:	4602      	mov	r2, r0
+ 8002b2c:	4bbc      	ldr	r3, [pc, #752]	@ (8002e20 <main+0x1240>)
+ 8002b2e:	681b      	ldr	r3, [r3, #0]
+ 8002b30:	1ad3      	subs	r3, r2, r3
+ 8002b32:	f242 7210 	movw	r2, #10000	@ 0x2710
+ 8002b36:	4293      	cmp	r3, r2
+ 8002b38:	d914      	bls.n	8002b64 <main+0xf84>
+      {
+        Motor_Stop_All();
+ 8002b3a:	f001 fd25 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L2: Timeout putar 180° (10 detik), paksa lanjut!\r\n");
+ 8002b3e:	48b9      	ldr	r0, [pc, #740]	@ (8002e24 <main+0x1244>)
+ 8002b40:	f009 f834 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS;
+ 8002b44:	4bb5      	ldr	r3, [pc, #724]	@ (8002e1c <main+0x123c>)
+ 8002b46:	220e      	movs	r2, #14
+ 8002b48:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 8002b4a:	f003 fb03 	bl	8006154 <HAL_GetTick>
+ 8002b4e:	4603      	mov	r3, r0
+ 8002b50:	4ab5      	ldr	r2, [pc, #724]	@ (8002e28 <main+0x1248>)
+ 8002b52:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8002b54:	4bb5      	ldr	r3, [pc, #724]	@ (8002e2c <main+0x124c>)
+ 8002b56:	2200      	movs	r2, #0
+ 8002b58:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_180 = 0;
+ 8002b5a:	4bb1      	ldr	r3, [pc, #708]	@ (8002e20 <main+0x1240>)
+ 8002b5c:	2200      	movs	r2, #0
+ 8002b5e:	601a      	str	r2, [r3, #0]
+        break;
+ 8002b60:	f000 bd7b 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
+      if (yawAngle_deg < -180.0f)
+ 8002b64:	4bab      	ldr	r3, [pc, #684]	@ (8002e14 <main+0x1234>)
+ 8002b66:	edd3 7a00 	vldr	s15, [r3]
+ 8002b6a:	ed9f 7ab1 	vldr	s14, [pc, #708]	@ 8002e30 <main+0x1250>
+ 8002b6e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002b72:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002b76:	d522      	bpl.n	8002bbe <main+0xfde>
+      {
+        // Sudah putar 180° (meskipun belum tentu lurus)
+        Motor_Stop_All();
+ 8002b78:	f001 fd06 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L2: Putaran 180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
+ 8002b7c:	4ba5      	ldr	r3, [pc, #660]	@ (8002e14 <main+0x1234>)
+ 8002b7e:	681b      	ldr	r3, [r3, #0]
+ 8002b80:	4618      	mov	r0, r3
+ 8002b82:	f7fd fce1 	bl	8000548 <__aeabi_f2d>
+ 8002b86:	4602      	mov	r2, r0
+ 8002b88:	460b      	mov	r3, r1
+ 8002b8a:	48aa      	ldr	r0, [pc, #680]	@ (8002e34 <main+0x1254>)
+ 8002b8c:	f008 ffa6 	bl	800badc <iprintf>
+        HAL_Delay(500);
+ 8002b90:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8002b94:	f003 faea 	bl	800616c <HAL_Delay>
+
+        // Transisi ke koreksi lurus dengan sensor belakang
+        printf("STATE L2: Masuk koreksi lurus dengan sensor belakang.\r\n");
+ 8002b98:	48a7      	ldr	r0, [pc, #668]	@ (8002e38 <main+0x1258>)
+ 8002b9a:	f009 f807 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_2_MUNDUR_KOREKSI;
+ 8002b9e:	4b9f      	ldr	r3, [pc, #636]	@ (8002e1c <main+0x123c>)
+ 8002ba0:	220d      	movs	r2, #13
+ 8002ba2:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 8002ba4:	f003 fad6 	bl	8006154 <HAL_GetTick>
+ 8002ba8:	4603      	mov	r3, r0
+ 8002baa:	4a9f      	ldr	r2, [pc, #636]	@ (8002e28 <main+0x1248>)
+ 8002bac:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8002bae:	4b9f      	ldr	r3, [pc, #636]	@ (8002e2c <main+0x124c>)
+ 8002bb0:	2200      	movs	r2, #0
+ 8002bb2:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_180 = 0;
+ 8002bb4:	4b9a      	ldr	r3, [pc, #616]	@ (8002e20 <main+0x1240>)
+ 8002bb6:	2200      	movs	r2, #0
+ 8002bb8:	601a      	str	r2, [r3, #0]
+        {
+          printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+          last_debug_print = HAL_GetTick();
+        }
+      }
+      break;
+ 8002bba:	f000 bd49 	b.w	8003650 <main+0x1a70>
+        Motor_Rotate_Right(25);
+ 8002bbe:	2019      	movs	r0, #25
+ 8002bc0:	f002 f8e7 	bl	8004d92 <Motor_Rotate_Right>
+        if (HAL_GetTick() - last_debug_print > 500)
+ 8002bc4:	f003 fac6 	bl	8006154 <HAL_GetTick>
+ 8002bc8:	4602      	mov	r2, r0
+ 8002bca:	4b9c      	ldr	r3, [pc, #624]	@ (8002e3c <main+0x125c>)
+ 8002bcc:	681b      	ldr	r3, [r3, #0]
+ 8002bce:	1ad3      	subs	r3, r2, r3
+ 8002bd0:	f5b3 7ffa 	cmp.w	r3, #500	@ 0x1f4
+ 8002bd4:	f240 853c 	bls.w	8003650 <main+0x1a70>
+          printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+ 8002bd8:	4b8e      	ldr	r3, [pc, #568]	@ (8002e14 <main+0x1234>)
+ 8002bda:	681b      	ldr	r3, [r3, #0]
+ 8002bdc:	4618      	mov	r0, r3
+ 8002bde:	f7fd fcb3 	bl	8000548 <__aeabi_f2d>
+ 8002be2:	4602      	mov	r2, r0
+ 8002be4:	460b      	mov	r3, r1
+ 8002be6:	4896      	ldr	r0, [pc, #600]	@ (8002e40 <main+0x1260>)
+ 8002be8:	f008 ff78 	bl	800badc <iprintf>
+          last_debug_print = HAL_GetTick();
+ 8002bec:	f003 fab2 	bl	8006154 <HAL_GetTick>
+ 8002bf0:	4603      	mov	r3, r0
+ 8002bf2:	4a92      	ldr	r2, [pc, #584]	@ (8002e3c <main+0x125c>)
+ 8002bf4:	6013      	str	r3, [r2, #0]
+      break;
+ 8002bf6:	f000 bd2b 	b.w	8003650 <main+0x1a70>
+
+    case STATE_LINTASAN_2_MUNDUR_KOREKSI:
+      if (sensor_e > batas_jarak_belakang && sensor_f > batas_jarak_belakang)
+ 8002bfa:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 8002bfe:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 8002c02:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002c06:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002c0a:	dd0d      	ble.n	8002c28 <main+0x1048>
+ 8002c0c:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002c10:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 8002c14:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002c18:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002c1c:	dd04      	ble.n	8002c28 <main+0x1048>
+      {
+        // Masih jauh, lanjutkan mundur pelan
+        Motor_Reverse(kecepatan_motor);
+ 8002c1e:	2017      	movs	r0, #23
+ 8002c20:	f002 f869 	bl	8004cf6 <Motor_Reverse>
+        // Target tercapai, berhenti
+        Motor_Stop_All();
+        printf("Mentok Siap koreksi!\r\n");
+        keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS;
+      }
+      break;
+ 8002c24:	f000 bd19 	b.w	800365a <main+0x1a7a>
+        Motor_Stop_All();
+ 8002c28:	f001 fcae 	bl	8004588 <Motor_Stop_All>
+        printf("Mentok Siap koreksi!\r\n");
+ 8002c2c:	4885      	ldr	r0, [pc, #532]	@ (8002e44 <main+0x1264>)
+ 8002c2e:	f008 ffbd 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS;
+ 8002c32:	4b7a      	ldr	r3, [pc, #488]	@ (8002e1c <main+0x123c>)
+ 8002c34:	220e      	movs	r2, #14
+ 8002c36:	701a      	strb	r2, [r3, #0]
+      break;
+ 8002c38:	f000 bd0f 	b.w	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_2_KOREKSI_LURUS:
+      // Timeout check - maksimal 5 detik untuk koreksi
+      if (HAL_GetTick() - waktu_mulai_koreksi > 5000)
+ 8002c3c:	f003 fa8a 	bl	8006154 <HAL_GetTick>
+ 8002c40:	4602      	mov	r2, r0
+ 8002c42:	4b79      	ldr	r3, [pc, #484]	@ (8002e28 <main+0x1248>)
+ 8002c44:	681b      	ldr	r3, [r3, #0]
+ 8002c46:	1ad3      	subs	r3, r2, r3
+ 8002c48:	f241 3288 	movw	r2, #5000	@ 0x1388
+ 8002c4c:	4293      	cmp	r3, r2
+ 8002c4e:	d911      	bls.n	8002c74 <main+0x1094>
+      {
+        Motor_Stop_All();
+ 8002c50:	f001 fc9a 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L2: Timeout koreksi lurus (5 detik), paksa lanjut.\r\n");
+ 8002c54:	487c      	ldr	r0, [pc, #496]	@ (8002e48 <main+0x1268>)
+ 8002c56:	f008 ffa9 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_3_MAJU;
+ 8002c5a:	4b70      	ldr	r3, [pc, #448]	@ (8002e1c <main+0x123c>)
+ 8002c5c:	220f      	movs	r2, #15
+ 8002c5e:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 8002c60:	f003 fa78 	bl	8006154 <HAL_GetTick>
+ 8002c64:	4603      	mov	r3, r0
+ 8002c66:	4a79      	ldr	r2, [pc, #484]	@ (8002e4c <main+0x126c>)
+ 8002c68:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = true;
+ 8002c6a:	4b79      	ldr	r3, [pc, #484]	@ (8002e50 <main+0x1270>)
+ 8002c6c:	2201      	movs	r2, #1
+ 8002c6e:	701a      	strb	r2, [r3, #0]
+        break;
+ 8002c70:	f000 bcf3 	b.w	800365a <main+0x1a7a>
+      }
+
+      // Validasi: Pastikan sensor belakang (E & F) mendeteksi dinding
+      if ((sensor_e > 0 && sensor_e < 150) && (sensor_f > 0 && sensor_f < 150))
+ 8002c74:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 8002c78:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 8002c7c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002c80:	f340 80f2 	ble.w	8002e68 <main+0x1288>
+ 8002c84:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 8002c88:	ed9f 7a72 	vldr	s14, [pc, #456]	@ 8002e54 <main+0x1274>
+ 8002c8c:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002c90:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002c94:	f140 80e8 	bpl.w	8002e68 <main+0x1288>
+ 8002c98:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002c9c:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 8002ca0:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002ca4:	f340 80e0 	ble.w	8002e68 <main+0x1288>
+ 8002ca8:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002cac:	ed9f 7a69 	vldr	s14, [pc, #420]	@ 8002e54 <main+0x1274>
+ 8002cb0:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002cb4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002cb8:	f140 80d6 	bpl.w	8002e68 <main+0x1288>
+      {
+
+        float selisih_belakang = fabs(sensor_e - sensor_f);
+ 8002cbc:	ed97 7a0c 	vldr	s14, [r7, #48]	@ 0x30
+ 8002cc0:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002cc4:	ee77 7a67 	vsub.f32	s15, s14, s15
+ 8002cc8:	eef0 7ae7 	vabs.f32	s15, s15
+ 8002ccc:	edc7 7a03 	vstr	s15, [r7, #12]
+
+        if (selisih_belakang > 1.0f)
+ 8002cd0:	edd7 7a03 	vldr	s15, [r7, #12]
+ 8002cd4:	eeb7 7a00 	vmov.f32	s14, #112	@ 0x3f800000  1.0
+ 8002cd8:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002cdc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002ce0:	dd53      	ble.n	8002d8a <main+0x11aa>
+        {
+          // Robot belum lurus, perlu koreksi
+          counter_koreksi_stabil = 0; // Reset counter stabilitas
+ 8002ce2:	4b52      	ldr	r3, [pc, #328]	@ (8002e2c <main+0x124c>)
+ 8002ce4:	2200      	movs	r2, #0
+ 8002ce6:	701a      	strb	r2, [r3, #0]
+
+          if (sensor_e > sensor_f)
+ 8002ce8:	ed97 7a0c 	vldr	s14, [r7, #48]	@ 0x30
+ 8002cec:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8002cf0:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 8002cf4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002cf8:	dd23      	ble.n	8002d42 <main+0x1162>
+          {
+            // Sensor E (belakang kiri) lebih jauh
+            // Putar kiri untuk luruskan
+            printf("Koreksi L2: Putar kiri | E:%.1f > F:%.1f | Diff:%.1f\r\n",
+ 8002cfa:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8002cfc:	f7fd fc24 	bl	8000548 <__aeabi_f2d>
+ 8002d00:	4680      	mov	r8, r0
+ 8002d02:	4689      	mov	r9, r1
+ 8002d04:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8002d06:	f7fd fc1f 	bl	8000548 <__aeabi_f2d>
+ 8002d0a:	4604      	mov	r4, r0
+ 8002d0c:	460d      	mov	r5, r1
+ 8002d0e:	68f8      	ldr	r0, [r7, #12]
+ 8002d10:	f7fd fc1a 	bl	8000548 <__aeabi_f2d>
+ 8002d14:	4602      	mov	r2, r0
+ 8002d16:	460b      	mov	r3, r1
+ 8002d18:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8002d1c:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002d20:	4642      	mov	r2, r8
+ 8002d22:	464b      	mov	r3, r9
+ 8002d24:	484c      	ldr	r0, [pc, #304]	@ (8002e58 <main+0x1278>)
+ 8002d26:	f008 fed9 	bl	800badc <iprintf>
+                   sensor_e, sensor_f, selisih_belakang);
+            Motor_Rotate_Left(25);
+ 8002d2a:	2019      	movs	r0, #25
+ 8002d2c:	f002 f805 	bl	8004d3a <Motor_Rotate_Left>
+            HAL_Delay(100);
+ 8002d30:	2064      	movs	r0, #100	@ 0x64
+ 8002d32:	f003 fa1b 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 8002d36:	f001 fc27 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 8002d3a:	2032      	movs	r0, #50	@ 0x32
+ 8002d3c:	f003 fa16 	bl	800616c <HAL_Delay>
+      {
+ 8002d40:	e0b4      	b.n	8002eac <main+0x12cc>
+          }
+          else
+          {
+            // Sensor F (belakang kanan) lebih jauh
+            // Putar kanan untuk luruskan
+            printf("Koreksi L2: Putar kanan | F:%.1f > E:%.1f | Diff:%.1f\r\n",
+ 8002d42:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8002d44:	f7fd fc00 	bl	8000548 <__aeabi_f2d>
+ 8002d48:	4680      	mov	r8, r0
+ 8002d4a:	4689      	mov	r9, r1
+ 8002d4c:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8002d4e:	f7fd fbfb 	bl	8000548 <__aeabi_f2d>
+ 8002d52:	4604      	mov	r4, r0
+ 8002d54:	460d      	mov	r5, r1
+ 8002d56:	68f8      	ldr	r0, [r7, #12]
+ 8002d58:	f7fd fbf6 	bl	8000548 <__aeabi_f2d>
+ 8002d5c:	4602      	mov	r2, r0
+ 8002d5e:	460b      	mov	r3, r1
+ 8002d60:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8002d64:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002d68:	4642      	mov	r2, r8
+ 8002d6a:	464b      	mov	r3, r9
+ 8002d6c:	483b      	ldr	r0, [pc, #236]	@ (8002e5c <main+0x127c>)
+ 8002d6e:	f008 feb5 	bl	800badc <iprintf>
+                   sensor_f, sensor_e, selisih_belakang);
+            Motor_Rotate_Right(25);
+ 8002d72:	2019      	movs	r0, #25
+ 8002d74:	f002 f80d 	bl	8004d92 <Motor_Rotate_Right>
+            HAL_Delay(100);
+ 8002d78:	2064      	movs	r0, #100	@ 0x64
+ 8002d7a:	f003 f9f7 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 8002d7e:	f001 fc03 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 8002d82:	2032      	movs	r0, #50	@ 0x32
+ 8002d84:	f003 f9f2 	bl	800616c <HAL_Delay>
+      {
+ 8002d88:	e090      	b.n	8002eac <main+0x12cc>
+          }
+        }
+        else
+        {
+          // Robot sudah cukup lurus (selisih <= 1.0cm)
+          counter_koreksi_stabil++;
+ 8002d8a:	4b28      	ldr	r3, [pc, #160]	@ (8002e2c <main+0x124c>)
+ 8002d8c:	781b      	ldrb	r3, [r3, #0]
+ 8002d8e:	3301      	adds	r3, #1
+ 8002d90:	b2da      	uxtb	r2, r3
+ 8002d92:	4b26      	ldr	r3, [pc, #152]	@ (8002e2c <main+0x124c>)
+ 8002d94:	701a      	strb	r2, [r3, #0]
+          printf("Lurus L2! E:%.1f F:%.1f | Diff:%.1f | Stabil:%d/3\r\n",
+ 8002d96:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8002d98:	f7fd fbd6 	bl	8000548 <__aeabi_f2d>
+ 8002d9c:	4680      	mov	r8, r0
+ 8002d9e:	4689      	mov	r9, r1
+ 8002da0:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8002da2:	f7fd fbd1 	bl	8000548 <__aeabi_f2d>
+ 8002da6:	4604      	mov	r4, r0
+ 8002da8:	460d      	mov	r5, r1
+ 8002daa:	68f8      	ldr	r0, [r7, #12]
+ 8002dac:	f7fd fbcc 	bl	8000548 <__aeabi_f2d>
+ 8002db0:	4602      	mov	r2, r0
+ 8002db2:	460b      	mov	r3, r1
+ 8002db4:	491d      	ldr	r1, [pc, #116]	@ (8002e2c <main+0x124c>)
+ 8002db6:	7809      	ldrb	r1, [r1, #0]
+ 8002db8:	9104      	str	r1, [sp, #16]
+ 8002dba:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8002dbe:	e9cd 4500 	strd	r4, r5, [sp]
+ 8002dc2:	4642      	mov	r2, r8
+ 8002dc4:	464b      	mov	r3, r9
+ 8002dc6:	4826      	ldr	r0, [pc, #152]	@ (8002e60 <main+0x1280>)
+ 8002dc8:	f008 fe88 	bl	800badc <iprintf>
+                 sensor_e, sensor_f, selisih_belakang, counter_koreksi_stabil);
+
+          if (counter_koreksi_stabil >= 3)
+ 8002dcc:	4b17      	ldr	r3, [pc, #92]	@ (8002e2c <main+0x124c>)
+ 8002dce:	781b      	ldrb	r3, [r3, #0]
+ 8002dd0:	2b02      	cmp	r3, #2
+ 8002dd2:	d914      	bls.n	8002dfe <main+0x121e>
+          {
+            // Validasi: Sudah lurus 3x pembacaan berturut-turut
+            Motor_Stop_All();
+ 8002dd4:	f001 fbd8 	bl	8004588 <Motor_Stop_All>
+            printf("STATE L2: Koreksi lurus SELESAI! Lanjut Lintasan 3.\r\n");
+ 8002dd8:	4822      	ldr	r0, [pc, #136]	@ (8002e64 <main+0x1284>)
+ 8002dda:	f008 fee7 	bl	800bbac <puts>
+            HAL_Delay(1000);
+ 8002dde:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 8002de2:	f003 f9c3 	bl	800616c <HAL_Delay>
+            keadaan_robot = STATE_LINTASAN_3_MAJU;
+ 8002de6:	4b0d      	ldr	r3, [pc, #52]	@ (8002e1c <main+0x123c>)
+ 8002de8:	220f      	movs	r2, #15
+ 8002dea:	701a      	strb	r2, [r3, #0]
+            waktu_terakhir_gerak = HAL_GetTick();
+ 8002dec:	f003 f9b2 	bl	8006154 <HAL_GetTick>
+ 8002df0:	4603      	mov	r3, r0
+ 8002df2:	4a16      	ldr	r2, [pc, #88]	@ (8002e4c <main+0x126c>)
+ 8002df4:	6013      	str	r3, [r2, #0]
+            sedang_bergerak = true;
+ 8002df6:	4b16      	ldr	r3, [pc, #88]	@ (8002e50 <main+0x1270>)
+ 8002df8:	2201      	movs	r2, #1
+ 8002dfa:	701a      	strb	r2, [r3, #0]
+      {
+ 8002dfc:	e056      	b.n	8002eac <main+0x12cc>
+          }
+          else
+          {
+            // Tunggu pembacaan sensor berikutnya untuk validasi
+            Motor_Stop_All();
+ 8002dfe:	f001 fbc3 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(100);
+ 8002e02:	2064      	movs	r0, #100	@ 0x64
+ 8002e04:	f003 f9b2 	bl	800616c <HAL_Delay>
+      {
+ 8002e08:	e050      	b.n	8002eac <main+0x12cc>
+ 8002e0a:	bf00      	nop
+ 8002e0c:	0801071c 	.word	0x0801071c
+ 8002e10:	08010434 	.word	0x08010434
+ 8002e14:	200007d0 	.word	0x200007d0
+ 8002e18:	200007d4 	.word	0x200007d4
+ 8002e1c:	20000750 	.word	0x20000750
+ 8002e20:	20000764 	.word	0x20000764
+ 8002e24:	0801074c 	.word	0x0801074c
+ 8002e28:	2000075c 	.word	0x2000075c
+ 8002e2c:	20000760 	.word	0x20000760
+ 8002e30:	c3340000 	.word	0xc3340000
+ 8002e34:	08010788 	.word	0x08010788
+ 8002e38:	080107c0 	.word	0x080107c0
+ 8002e3c:	200007e4 	.word	0x200007e4
+ 8002e40:	080107f8 	.word	0x080107f8
+ 8002e44:	08010820 	.word	0x08010820
+ 8002e48:	08010838 	.word	0x08010838
+ 8002e4c:	20000754 	.word	0x20000754
+ 8002e50:	20000758 	.word	0x20000758
+ 8002e54:	43160000 	.word	0x43160000
+ 8002e58:	08010874 	.word	0x08010874
+ 8002e5c:	080108ac 	.word	0x080108ac
+ 8002e60:	080108e4 	.word	0x080108e4
+ 8002e64:	08010918 	.word	0x08010918
+        }
+      }
+      else
+      {
+        // Sensor belakang tidak mendeteksi dinding (nilai 0 atau > 50cm)
+        printf("Warning L2: Dinding belakang tidak terdeteksi (E:%.1f F:%.1f)\r\n",
+ 8002e68:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8002e6a:	f7fd fb6d 	bl	8000548 <__aeabi_f2d>
+ 8002e6e:	4604      	mov	r4, r0
+ 8002e70:	460d      	mov	r5, r1
+ 8002e72:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8002e74:	f7fd fb68 	bl	8000548 <__aeabi_f2d>
+ 8002e78:	4602      	mov	r2, r0
+ 8002e7a:	460b      	mov	r3, r1
+ 8002e7c:	e9cd 2300 	strd	r2, r3, [sp]
+ 8002e80:	4622      	mov	r2, r4
+ 8002e82:	462b      	mov	r3, r5
+ 8002e84:	48b7      	ldr	r0, [pc, #732]	@ (8003164 <main+0x1584>)
+ 8002e86:	f008 fe29 	bl	800badc <iprintf>
+               sensor_e, sensor_f);
+        printf("STATE L2: Skip koreksi, langsung ke Lintasan 3.\r\n");
+ 8002e8a:	48b7      	ldr	r0, [pc, #732]	@ (8003168 <main+0x1588>)
+ 8002e8c:	f008 fe8e 	bl	800bbac <puts>
+        Motor_Stop_All();
+ 8002e90:	f001 fb7a 	bl	8004588 <Motor_Stop_All>
+        keadaan_robot = STATE_LINTASAN_3_MAJU;
+ 8002e94:	4bb5      	ldr	r3, [pc, #724]	@ (800316c <main+0x158c>)
+ 8002e96:	220f      	movs	r2, #15
+ 8002e98:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 8002e9a:	f003 f95b 	bl	8006154 <HAL_GetTick>
+ 8002e9e:	4603      	mov	r3, r0
+ 8002ea0:	4ab3      	ldr	r2, [pc, #716]	@ (8003170 <main+0x1590>)
+ 8002ea2:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = true;
+ 8002ea4:	4bb3      	ldr	r3, [pc, #716]	@ (8003174 <main+0x1594>)
+ 8002ea6:	2201      	movs	r2, #1
+ 8002ea8:	701a      	strb	r2, [r3, #0]
+      }
+      break;
+ 8002eaa:	e3d6      	b.n	800365a <main+0x1a7a>
+ 8002eac:	e3d5      	b.n	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_3_MAJU:
+      // Cek kondisi transisi state: jika ada halangan di depan
+      if (ada_halangan_depan)
+ 8002eae:	7efb      	ldrb	r3, [r7, #27]
+ 8002eb0:	2b00      	cmp	r3, #0
+ 8002eb2:	d008      	beq.n	8002ec6 <main+0x12e6>
+      {
+        Motor_Stop_All();
+ 8002eb4:	f001 fb68 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Halangan depan terdeteksi. Masuk ke manuver.\r\n");
+ 8002eb8:	48af      	ldr	r0, [pc, #700]	@ (8003178 <main+0x1598>)
+ 8002eba:	f008 fe77 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_3_PUTAR_KANAN;
+ 8002ebe:	4bab      	ldr	r3, [pc, #684]	@ (800316c <main+0x158c>)
+ 8002ec0:	2210      	movs	r2, #16
+ 8002ec2:	701a      	strb	r2, [r3, #0]
+        break; // Langsung keluar untuk iterasi berikutnya
+ 8002ec4:	e3c9      	b.n	800365a <main+0x1a7a>
+      }
+
+      // Jika sedang dalam periode gerak, lakukan wall following
+      if (sedang_bergerak)
+ 8002ec6:	4bab      	ldr	r3, [pc, #684]	@ (8003174 <main+0x1594>)
+ 8002ec8:	781b      	ldrb	r3, [r3, #0]
+ 8002eca:	2b00      	cmp	r3, #0
+ 8002ecc:	d01b      	beq.n	8002f06 <main+0x1326>
+      {
+        if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan)
+ 8002ece:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8002ed2:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002ed6:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002eda:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002ede:	dc08      	bgt.n	8002ef2 <main+0x1312>
+ 8002ee0:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8002ee4:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 8002ee8:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002eec:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002ef0:	dd03      	ble.n	8002efa <main+0x131a>
+        {
+          Motor_Forward(kecepatan_motor);
+ 8002ef2:	2017      	movs	r0, #23
+ 8002ef4:	f001 fee0 	bl	8004cb8 <Motor_Forward>
+ 8002ef8:	e005      	b.n	8002f06 <main+0x1326>
+        }
+        else
+        {
+          // Target tercapai, berhenti
+          Motor_Stop_All();
+ 8002efa:	f001 fb45 	bl	8004588 <Motor_Stop_All>
+          HAL_Delay(2000);
+ 8002efe:	f44f 60fa 	mov.w	r0, #2000	@ 0x7d0
+ 8002f02:	f003 f933 	bl	800616c <HAL_Delay>
+        }
+      }
+      waktu_mulai_putar_neg_90 = HAL_GetTick(); // Mulai timer untuk timeout
+ 8002f06:	f003 f925 	bl	8006154 <HAL_GetTick>
+ 8002f0a:	4603      	mov	r3, r0
+ 8002f0c:	4a9b      	ldr	r2, [pc, #620]	@ (800317c <main+0x159c>)
+ 8002f0e:	6013      	str	r3, [r2, #0]
+      yawAngle_deg = 0.0f;
+ 8002f10:	4b9b      	ldr	r3, [pc, #620]	@ (8003180 <main+0x15a0>)
+ 8002f12:	f04f 0200 	mov.w	r2, #0
+ 8002f16:	601a      	str	r2, [r3, #0]
+      lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
+ 8002f18:	f003 f91c 	bl	8006154 <HAL_GetTick>
+ 8002f1c:	4603      	mov	r3, r0
+ 8002f1e:	4a99      	ldr	r2, [pc, #612]	@ (8003184 <main+0x15a4>)
+ 8002f20:	6013      	str	r3, [r2, #0]
+      break;
+ 8002f22:	e39a      	b.n	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_3_PUTAR_KANAN:
+      if (yawAngle_deg < -90.0f)
+ 8002f24:	4b96      	ldr	r3, [pc, #600]	@ (8003180 <main+0x15a0>)
+ 8002f26:	edd3 7a00 	vldr	s15, [r3]
+ 8002f2a:	ed9f 7a97 	vldr	s14, [pc, #604]	@ 8003188 <main+0x15a8>
+ 8002f2e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002f32:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002f36:	d521      	bpl.n	8002f7c <main+0x139c>
+      {
+        // Sudah putar 180° (meskipun belum tentu lurus)
+        Motor_Stop_All();
+ 8002f38:	f001 fb26 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L1: Putaran -90° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
+ 8002f3c:	4b90      	ldr	r3, [pc, #576]	@ (8003180 <main+0x15a0>)
+ 8002f3e:	681b      	ldr	r3, [r3, #0]
+ 8002f40:	4618      	mov	r0, r3
+ 8002f42:	f7fd fb01 	bl	8000548 <__aeabi_f2d>
+ 8002f46:	4602      	mov	r2, r0
+ 8002f48:	460b      	mov	r3, r1
+ 8002f4a:	4890      	ldr	r0, [pc, #576]	@ (800318c <main+0x15ac>)
+ 8002f4c:	f008 fdc6 	bl	800badc <iprintf>
+        HAL_Delay(500);
+ 8002f50:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 8002f54:	f003 f90a 	bl	800616c <HAL_Delay>
+
+        // Transisi ke koreksi lurus dengan sensor belakang
+        printf("STATE L3: Masuk koreksi lurus dengan sensor belakang.\r\n");
+ 8002f58:	488d      	ldr	r0, [pc, #564]	@ (8003190 <main+0x15b0>)
+ 8002f5a:	f008 fe27 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_3_KOREKSI_LURUS;
+ 8002f5e:	4b83      	ldr	r3, [pc, #524]	@ (800316c <main+0x158c>)
+ 8002f60:	2211      	movs	r2, #17
+ 8002f62:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 8002f64:	f003 f8f6 	bl	8006154 <HAL_GetTick>
+ 8002f68:	4603      	mov	r3, r0
+ 8002f6a:	4a8a      	ldr	r2, [pc, #552]	@ (8003194 <main+0x15b4>)
+ 8002f6c:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8002f6e:	4b8a      	ldr	r3, [pc, #552]	@ (8003198 <main+0x15b8>)
+ 8002f70:	2200      	movs	r2, #0
+ 8002f72:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_neg_90 = 0;
+ 8002f74:	4b81      	ldr	r3, [pc, #516]	@ (800317c <main+0x159c>)
+ 8002f76:	2200      	movs	r2, #0
+ 8002f78:	601a      	str	r2, [r3, #0]
+        {
+          printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+          last_debug_print = HAL_GetTick();
+        }
+      }
+      break;
+ 8002f7a:	e36b      	b.n	8003654 <main+0x1a74>
+        Motor_Rotate_Right(25);
+ 8002f7c:	2019      	movs	r0, #25
+ 8002f7e:	f001 ff08 	bl	8004d92 <Motor_Rotate_Right>
+        if (HAL_GetTick() - last_debug_print > 500)
+ 8002f82:	f003 f8e7 	bl	8006154 <HAL_GetTick>
+ 8002f86:	4602      	mov	r2, r0
+ 8002f88:	4b84      	ldr	r3, [pc, #528]	@ (800319c <main+0x15bc>)
+ 8002f8a:	681b      	ldr	r3, [r3, #0]
+ 8002f8c:	1ad3      	subs	r3, r2, r3
+ 8002f8e:	f5b3 7ffa 	cmp.w	r3, #500	@ 0x1f4
+ 8002f92:	f240 835f 	bls.w	8003654 <main+0x1a74>
+          printf("Putar 180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+ 8002f96:	4b7a      	ldr	r3, [pc, #488]	@ (8003180 <main+0x15a0>)
+ 8002f98:	681b      	ldr	r3, [r3, #0]
+ 8002f9a:	4618      	mov	r0, r3
+ 8002f9c:	f7fd fad4 	bl	8000548 <__aeabi_f2d>
+ 8002fa0:	4602      	mov	r2, r0
+ 8002fa2:	460b      	mov	r3, r1
+ 8002fa4:	487e      	ldr	r0, [pc, #504]	@ (80031a0 <main+0x15c0>)
+ 8002fa6:	f008 fd99 	bl	800badc <iprintf>
+          last_debug_print = HAL_GetTick();
+ 8002faa:	f003 f8d3 	bl	8006154 <HAL_GetTick>
+ 8002fae:	4603      	mov	r3, r0
+ 8002fb0:	4a7a      	ldr	r2, [pc, #488]	@ (800319c <main+0x15bc>)
+ 8002fb2:	6013      	str	r3, [r2, #0]
+      break;
+ 8002fb4:	e34e      	b.n	8003654 <main+0x1a74>
+
+    case STATE_LINTASAN_3_KOREKSI_LURUS:
+      // Timeout check - maksimal 5 detik untuk koreksi
+      if (HAL_GetTick() - waktu_mulai_koreksi > 5000)
+ 8002fb6:	f003 f8cd 	bl	8006154 <HAL_GetTick>
+ 8002fba:	4602      	mov	r2, r0
+ 8002fbc:	4b75      	ldr	r3, [pc, #468]	@ (8003194 <main+0x15b4>)
+ 8002fbe:	681b      	ldr	r3, [r3, #0]
+ 8002fc0:	1ad3      	subs	r3, r2, r3
+ 8002fc2:	f241 3288 	movw	r2, #5000	@ 0x1388
+ 8002fc6:	4293      	cmp	r3, r2
+ 8002fc8:	d908      	bls.n	8002fdc <main+0x13fc>
+      {
+        Motor_Stop_All();
+ 8002fca:	f001 fadd 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Timeout koreksi lurus (5 detik), paksa lanjut.\r\n");
+ 8002fce:	4875      	ldr	r0, [pc, #468]	@ (80031a4 <main+0x15c4>)
+ 8002fd0:	f008 fdec 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_4_MAJU;
+ 8002fd4:	4b65      	ldr	r3, [pc, #404]	@ (800316c <main+0x158c>)
+ 8002fd6:	2212      	movs	r2, #18
+ 8002fd8:	701a      	strb	r2, [r3, #0]
+        break;
+ 8002fda:	e33e      	b.n	800365a <main+0x1a7a>
+      }
+
+      // Validasi: Pastikan sensor samping kanan (G & H) mendeteksi dinding
+      if ((sensor_c > 0 && sensor_c < 50) && (sensor_d > 0 && sensor_d < 50))
+ 8002fdc:	edd7 7a0e 	vldr	s15, [r7, #56]	@ 0x38
+ 8002fe0:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 8002fe4:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002fe8:	f340 80e8 	ble.w	80031bc <main+0x15dc>
+ 8002fec:	edd7 7a0e 	vldr	s15, [r7, #56]	@ 0x38
+ 8002ff0:	ed9f 7a6d 	vldr	s14, [pc, #436]	@ 80031a8 <main+0x15c8>
+ 8002ff4:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8002ff8:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8002ffc:	f140 80de 	bpl.w	80031bc <main+0x15dc>
+ 8003000:	edd7 7a0d 	vldr	s15, [r7, #52]	@ 0x34
+ 8003004:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 8003008:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800300c:	f340 80d6 	ble.w	80031bc <main+0x15dc>
+ 8003010:	edd7 7a0d 	vldr	s15, [r7, #52]	@ 0x34
+ 8003014:	ed9f 7a64 	vldr	s14, [pc, #400]	@ 80031a8 <main+0x15c8>
+ 8003018:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 800301c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003020:	f140 80cc 	bpl.w	80031bc <main+0x15dc>
+      {
+
+        float selisih_samping = fabs(sensor_c - sensor_d);
+ 8003024:	ed97 7a0e 	vldr	s14, [r7, #56]	@ 0x38
+ 8003028:	edd7 7a0d 	vldr	s15, [r7, #52]	@ 0x34
+ 800302c:	ee77 7a67 	vsub.f32	s15, s14, s15
+ 8003030:	eef0 7ae7 	vabs.f32	s15, s15
+ 8003034:	edc7 7a04 	vstr	s15, [r7, #16]
+
+        if (selisih_samping > 0.5f)
+ 8003038:	edd7 7a04 	vldr	s15, [r7, #16]
+ 800303c:	eeb6 7a00 	vmov.f32	s14, #96	@ 0x3f000000  0.5
+ 8003040:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8003044:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003048:	dd53      	ble.n	80030f2 <main+0x1512>
+        {
+          // Robot belum lurus, perlu koreksi
+          counter_koreksi_stabil = 0; // Reset counter stabilitas
+ 800304a:	4b53      	ldr	r3, [pc, #332]	@ (8003198 <main+0x15b8>)
+ 800304c:	2200      	movs	r2, #0
+ 800304e:	701a      	strb	r2, [r3, #0]
+
+          if (sensor_c > sensor_d)
+ 8003050:	ed97 7a0e 	vldr	s14, [r7, #56]	@ 0x38
+ 8003054:	edd7 7a0d 	vldr	s15, [r7, #52]	@ 0x34
+ 8003058:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 800305c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003060:	dd23      	ble.n	80030aa <main+0x14ca>
+          {
+            // Kondisi: Bagian DEPAN robot lebih jauh dari dinding kanan
+            // Artinya: Ekor robot lebih dekat ke dinding (robot miring ke kiri)
+            // Solusi: Putar KANAN untuk meluruskan
+            printf("Koreksi: Putar kanan | C:%.1f > D:%.1f | Diff:%.1f\r\n",
+ 8003062:	6bb8      	ldr	r0, [r7, #56]	@ 0x38
+ 8003064:	f7fd fa70 	bl	8000548 <__aeabi_f2d>
+ 8003068:	4680      	mov	r8, r0
+ 800306a:	4689      	mov	r9, r1
+ 800306c:	6b78      	ldr	r0, [r7, #52]	@ 0x34
+ 800306e:	f7fd fa6b 	bl	8000548 <__aeabi_f2d>
+ 8003072:	4604      	mov	r4, r0
+ 8003074:	460d      	mov	r5, r1
+ 8003076:	6938      	ldr	r0, [r7, #16]
+ 8003078:	f7fd fa66 	bl	8000548 <__aeabi_f2d>
+ 800307c:	4602      	mov	r2, r0
+ 800307e:	460b      	mov	r3, r1
+ 8003080:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8003084:	e9cd 4500 	strd	r4, r5, [sp]
+ 8003088:	4642      	mov	r2, r8
+ 800308a:	464b      	mov	r3, r9
+ 800308c:	4847      	ldr	r0, [pc, #284]	@ (80031ac <main+0x15cc>)
+ 800308e:	f008 fd25 	bl	800badc <iprintf>
+                   sensor_c, sensor_d, selisih_samping);
+            Motor_Rotate_Left(25);
+ 8003092:	2019      	movs	r0, #25
+ 8003094:	f001 fe51 	bl	8004d3a <Motor_Rotate_Left>
+            HAL_Delay(100);
+ 8003098:	2064      	movs	r0, #100	@ 0x64
+ 800309a:	f003 f867 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 800309e:	f001 fa73 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 80030a2:	2032      	movs	r0, #50	@ 0x32
+ 80030a4:	f003 f862 	bl	800616c <HAL_Delay>
+      {
+ 80030a8:	e0a2      	b.n	80031f0 <main+0x1610>
+          else
+          {
+            // Kondisi: Bagian BELAKANG robot lebih jauh dari dinding kanan
+            // Artinya: Kepala robot lebih dekat ke dinding (robot miring ke kanan)
+            // Solusi: Putar KIRI untuk meluruskan
+            printf("Koreksi: Putar kiri | G:%.1f > H:%.1f | Diff:%.1f\r\n",
+ 80030aa:	6bb8      	ldr	r0, [r7, #56]	@ 0x38
+ 80030ac:	f7fd fa4c 	bl	8000548 <__aeabi_f2d>
+ 80030b0:	4680      	mov	r8, r0
+ 80030b2:	4689      	mov	r9, r1
+ 80030b4:	6b78      	ldr	r0, [r7, #52]	@ 0x34
+ 80030b6:	f7fd fa47 	bl	8000548 <__aeabi_f2d>
+ 80030ba:	4604      	mov	r4, r0
+ 80030bc:	460d      	mov	r5, r1
+ 80030be:	6938      	ldr	r0, [r7, #16]
+ 80030c0:	f7fd fa42 	bl	8000548 <__aeabi_f2d>
+ 80030c4:	4602      	mov	r2, r0
+ 80030c6:	460b      	mov	r3, r1
+ 80030c8:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 80030cc:	e9cd 4500 	strd	r4, r5, [sp]
+ 80030d0:	4642      	mov	r2, r8
+ 80030d2:	464b      	mov	r3, r9
+ 80030d4:	4836      	ldr	r0, [pc, #216]	@ (80031b0 <main+0x15d0>)
+ 80030d6:	f008 fd01 	bl	800badc <iprintf>
+                   sensor_c, sensor_d, selisih_samping);
+            Motor_Rotate_Right(25);
+ 80030da:	2019      	movs	r0, #25
+ 80030dc:	f001 fe59 	bl	8004d92 <Motor_Rotate_Right>
+            HAL_Delay(100);
+ 80030e0:	2064      	movs	r0, #100	@ 0x64
+ 80030e2:	f003 f843 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 80030e6:	f001 fa4f 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 80030ea:	2032      	movs	r0, #50	@ 0x32
+ 80030ec:	f003 f83e 	bl	800616c <HAL_Delay>
+      {
+ 80030f0:	e07e      	b.n	80031f0 <main+0x1610>
+          }
+        }
+        else
+        {
+          // Robot sudah cukup lurus (selisih <= 0.5cm)
+          counter_koreksi_stabil++;
+ 80030f2:	4b29      	ldr	r3, [pc, #164]	@ (8003198 <main+0x15b8>)
+ 80030f4:	781b      	ldrb	r3, [r3, #0]
+ 80030f6:	3301      	adds	r3, #1
+ 80030f8:	b2da      	uxtb	r2, r3
+ 80030fa:	4b27      	ldr	r3, [pc, #156]	@ (8003198 <main+0x15b8>)
+ 80030fc:	701a      	strb	r2, [r3, #0]
+          printf("Lurus! C:%.1f D:%.1f | Diff:%.1f | Stabil:%d/3\r\n",
+ 80030fe:	6bb8      	ldr	r0, [r7, #56]	@ 0x38
+ 8003100:	f7fd fa22 	bl	8000548 <__aeabi_f2d>
+ 8003104:	4680      	mov	r8, r0
+ 8003106:	4689      	mov	r9, r1
+ 8003108:	6b78      	ldr	r0, [r7, #52]	@ 0x34
+ 800310a:	f7fd fa1d 	bl	8000548 <__aeabi_f2d>
+ 800310e:	4604      	mov	r4, r0
+ 8003110:	460d      	mov	r5, r1
+ 8003112:	6938      	ldr	r0, [r7, #16]
+ 8003114:	f7fd fa18 	bl	8000548 <__aeabi_f2d>
+ 8003118:	4602      	mov	r2, r0
+ 800311a:	460b      	mov	r3, r1
+ 800311c:	491e      	ldr	r1, [pc, #120]	@ (8003198 <main+0x15b8>)
+ 800311e:	7809      	ldrb	r1, [r1, #0]
+ 8003120:	9104      	str	r1, [sp, #16]
+ 8003122:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8003126:	e9cd 4500 	strd	r4, r5, [sp]
+ 800312a:	4642      	mov	r2, r8
+ 800312c:	464b      	mov	r3, r9
+ 800312e:	4821      	ldr	r0, [pc, #132]	@ (80031b4 <main+0x15d4>)
+ 8003130:	f008 fcd4 	bl	800badc <iprintf>
+                 sensor_c, sensor_d, selisih_samping, counter_koreksi_stabil);
+
+          if (counter_koreksi_stabil >= 3)
+ 8003134:	4b18      	ldr	r3, [pc, #96]	@ (8003198 <main+0x15b8>)
+ 8003136:	781b      	ldrb	r3, [r3, #0]
+ 8003138:	2b02      	cmp	r3, #2
+ 800313a:	d90c      	bls.n	8003156 <main+0x1576>
+          {
+            // Validasi: Sudah lurus 3x pembacaan berturut-turut
+            Motor_Stop_All();
+ 800313c:	f001 fa24 	bl	8004588 <Motor_Stop_All>
+            printf("STATE: Koreksi lurus SELESAI! Lanjut manuver belakang.\r\n");
+ 8003140:	481d      	ldr	r0, [pc, #116]	@ (80031b8 <main+0x15d8>)
+ 8003142:	f008 fd33 	bl	800bbac <puts>
+            HAL_Delay(1000);
+ 8003146:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 800314a:	f003 f80f 	bl	800616c <HAL_Delay>
+            keadaan_robot = STATE_LINTASAN_4_MAJU;
+ 800314e:	4b07      	ldr	r3, [pc, #28]	@ (800316c <main+0x158c>)
+ 8003150:	2212      	movs	r2, #18
+ 8003152:	701a      	strb	r2, [r3, #0]
+      {
+ 8003154:	e04c      	b.n	80031f0 <main+0x1610>
+          }
+          else
+          {
+            // Tunggu pembacaan sensor berikutnya untuk validasi
+            Motor_Stop_All();
+ 8003156:	f001 fa17 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(100);
+ 800315a:	2064      	movs	r0, #100	@ 0x64
+ 800315c:	f003 f806 	bl	800616c <HAL_Delay>
+      {
+ 8003160:	e046      	b.n	80031f0 <main+0x1610>
+ 8003162:	bf00      	nop
+ 8003164:	08010950 	.word	0x08010950
+ 8003168:	08010990 	.word	0x08010990
+ 800316c:	20000750 	.word	0x20000750
+ 8003170:	20000754 	.word	0x20000754
+ 8003174:	20000758 	.word	0x20000758
+ 8003178:	080103a8 	.word	0x080103a8
+ 800317c:	2000076c 	.word	0x2000076c
+ 8003180:	200007d0 	.word	0x200007d0
+ 8003184:	200007d4 	.word	0x200007d4
+ 8003188:	c2b40000 	.word	0xc2b40000
+ 800318c:	080109c4 	.word	0x080109c4
+ 8003190:	080109fc 	.word	0x080109fc
+ 8003194:	2000075c 	.word	0x2000075c
+ 8003198:	20000760 	.word	0x20000760
+ 800319c:	200007e8 	.word	0x200007e8
+ 80031a0:	080107f8 	.word	0x080107f8
+ 80031a4:	08010508 	.word	0x08010508
+ 80031a8:	42480000 	.word	0x42480000
+ 80031ac:	08010a34 	.word	0x08010a34
+ 80031b0:	08010578 	.word	0x08010578
+ 80031b4:	08010a6c 	.word	0x08010a6c
+ 80031b8:	080105e0 	.word	0x080105e0
+        }
+      }
+      else
+      {
+        // Sensor samping kanan tidak mendeteksi dinding (nilai 0 atau > 50cm)
+        printf("Warning: Dinding samping kanan tidak terdeteksi (C:%.1f D:%.1f)\r\n",
+ 80031bc:	6bb8      	ldr	r0, [r7, #56]	@ 0x38
+ 80031be:	f7fd f9c3 	bl	8000548 <__aeabi_f2d>
+ 80031c2:	4604      	mov	r4, r0
+ 80031c4:	460d      	mov	r5, r1
+ 80031c6:	6b78      	ldr	r0, [r7, #52]	@ 0x34
+ 80031c8:	f7fd f9be 	bl	8000548 <__aeabi_f2d>
+ 80031cc:	4602      	mov	r2, r0
+ 80031ce:	460b      	mov	r3, r1
+ 80031d0:	e9cd 2300 	strd	r2, r3, [sp]
+ 80031d4:	4622      	mov	r2, r4
+ 80031d6:	462b      	mov	r3, r5
+ 80031d8:	48b9      	ldr	r0, [pc, #740]	@ (80034c0 <main+0x18e0>)
+ 80031da:	f008 fc7f 	bl	800badc <iprintf>
+               sensor_c, sensor_d);
+        printf("STATE: Skip koreksi, langsung ke maju.\r\n");
+ 80031de:	48b9      	ldr	r0, [pc, #740]	@ (80034c4 <main+0x18e4>)
+ 80031e0:	f008 fce4 	bl	800bbac <puts>
+        Motor_Stop_All();
+ 80031e4:	f001 f9d0 	bl	8004588 <Motor_Stop_All>
+        keadaan_robot = STATE_LINTASAN_4_MAJU;
+ 80031e8:	4bb7      	ldr	r3, [pc, #732]	@ (80034c8 <main+0x18e8>)
+ 80031ea:	2212      	movs	r2, #18
+ 80031ec:	701a      	strb	r2, [r3, #0]
+      }
+      break;
+ 80031ee:	e234      	b.n	800365a <main+0x1a7a>
+ 80031f0:	e233      	b.n	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_4_MAJU:
+      // Cek kondisi transisi state: jika ada halangan di depan
+      if (ada_halangan_depan)
+ 80031f2:	7efb      	ldrb	r3, [r7, #27]
+ 80031f4:	2b00      	cmp	r3, #0
+ 80031f6:	d008      	beq.n	800320a <main+0x162a>
+      {
+        Motor_Stop_All();
+ 80031f8:	f001 f9c6 	bl	8004588 <Motor_Stop_All>
+        printf("STATE: Halangan depan terdeteksi. Masuk ke manuver.\r\n");
+ 80031fc:	48b3      	ldr	r0, [pc, #716]	@ (80034cc <main+0x18ec>)
+ 80031fe:	f008 fcd5 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_4_PUTAR_BALIK;
+ 8003202:	4bb1      	ldr	r3, [pc, #708]	@ (80034c8 <main+0x18e8>)
+ 8003204:	2213      	movs	r2, #19
+ 8003206:	701a      	strb	r2, [r3, #0]
+        break; // Langsung keluar untuk iterasi berikutnya
+ 8003208:	e227      	b.n	800365a <main+0x1a7a>
+      }
+
+      // Jika sedang dalam periode gerak, lakukan wall following
+      if (sedang_bergerak)
+ 800320a:	4bb1      	ldr	r3, [pc, #708]	@ (80034d0 <main+0x18f0>)
+ 800320c:	781b      	ldrb	r3, [r3, #0]
+ 800320e:	2b00      	cmp	r3, #0
+ 8003210:	d01b      	beq.n	800324a <main+0x166a>
+      {
+        if (sensor_a > batas_jarak_depan || sensor_b > batas_jarak_depan)
+ 8003212:	edd7 7a10 	vldr	s15, [r7, #64]	@ 0x40
+ 8003216:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 800321a:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 800321e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003222:	dc08      	bgt.n	8003236 <main+0x1656>
+ 8003224:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
+ 8003228:	eeb3 7a04 	vmov.f32	s14, #52	@ 0x41a00000  20.0
+ 800322c:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8003230:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003234:	dd03      	ble.n	800323e <main+0x165e>
+        {
+          Motor_Forward(kecepatan_motor);
+ 8003236:	2017      	movs	r0, #23
+ 8003238:	f001 fd3e 	bl	8004cb8 <Motor_Forward>
+ 800323c:	e005      	b.n	800324a <main+0x166a>
+        }
+        else
+        {
+          // Target tercapai, berhenti
+          Motor_Stop_All();
+ 800323e:	f001 f9a3 	bl	8004588 <Motor_Stop_All>
+          HAL_Delay(2000);
+ 8003242:	f44f 60fa 	mov.w	r0, #2000	@ 0x7d0
+ 8003246:	f002 ff91 	bl	800616c <HAL_Delay>
+                Motor_Rotate_Left(kecepatan_motor);
+            }
+        }
+        */
+      }
+      waktu_mulai_putar_neg_180 = HAL_GetTick(); // Mulai timer untuk timeout
+ 800324a:	f002 ff83 	bl	8006154 <HAL_GetTick>
+ 800324e:	4603      	mov	r3, r0
+ 8003250:	4aa0      	ldr	r2, [pc, #640]	@ (80034d4 <main+0x18f4>)
+ 8003252:	6013      	str	r3, [r2, #0]
+      yawAngle_deg = 0.0f;
+ 8003254:	4ba0      	ldr	r3, [pc, #640]	@ (80034d8 <main+0x18f8>)
+ 8003256:	f04f 0200 	mov.w	r2, #0
+ 800325a:	601a      	str	r2, [r3, #0]
+      lastTick = HAL_GetTick(); // RESET TIMING untuk mencegah dt yang besar
+ 800325c:	f002 ff7a 	bl	8006154 <HAL_GetTick>
+ 8003260:	4603      	mov	r3, r0
+ 8003262:	4a9e      	ldr	r2, [pc, #632]	@ (80034dc <main+0x18fc>)
+ 8003264:	6013      	str	r3, [r2, #0]
+      break;
+ 8003266:	e1f8      	b.n	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_4_PUTAR_BALIK:
+      // Timeout protection - maksimal 10 detik untuk putar 180
+      if (HAL_GetTick() - waktu_mulai_putar_neg_180 > 5000)
+ 8003268:	f002 ff74 	bl	8006154 <HAL_GetTick>
+ 800326c:	4602      	mov	r2, r0
+ 800326e:	4b99      	ldr	r3, [pc, #612]	@ (80034d4 <main+0x18f4>)
+ 8003270:	681b      	ldr	r3, [r3, #0]
+ 8003272:	1ad3      	subs	r3, r2, r3
+ 8003274:	f241 3288 	movw	r2, #5000	@ 0x1388
+ 8003278:	4293      	cmp	r3, r2
+ 800327a:	d913      	bls.n	80032a4 <main+0x16c4>
+      {
+        Motor_Stop_All();
+ 800327c:	f001 f984 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L4: Timeout putar -180° (10 detik), paksa lanjut!\r\n");
+ 8003280:	4897      	ldr	r0, [pc, #604]	@ (80034e0 <main+0x1900>)
+ 8003282:	f008 fc93 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_2_KOREKSI_LURUS;
+ 8003286:	4b90      	ldr	r3, [pc, #576]	@ (80034c8 <main+0x18e8>)
+ 8003288:	220e      	movs	r2, #14
+ 800328a:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 800328c:	f002 ff62 	bl	8006154 <HAL_GetTick>
+ 8003290:	4603      	mov	r3, r0
+ 8003292:	4a94      	ldr	r2, [pc, #592]	@ (80034e4 <main+0x1904>)
+ 8003294:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 8003296:	4b94      	ldr	r3, [pc, #592]	@ (80034e8 <main+0x1908>)
+ 8003298:	2200      	movs	r2, #0
+ 800329a:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_neg_180 = 0;
+ 800329c:	4b8d      	ldr	r3, [pc, #564]	@ (80034d4 <main+0x18f4>)
+ 800329e:	2200      	movs	r2, #0
+ 80032a0:	601a      	str	r2, [r3, #0]
+        break;
+ 80032a2:	e1da      	b.n	800365a <main+0x1a7a>
+      }
+
+      // Cek apakah sudah putar lebih dari 180° (menggunakan absolute value)
+      if (yawAngle_deg < -250.0f)
+ 80032a4:	4b8c      	ldr	r3, [pc, #560]	@ (80034d8 <main+0x18f8>)
+ 80032a6:	edd3 7a00 	vldr	s15, [r3]
+ 80032aa:	ed9f 7a90 	vldr	s14, [pc, #576]	@ 80034ec <main+0x190c>
+ 80032ae:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80032b2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80032b6:	d521      	bpl.n	80032fc <main+0x171c>
+      {
+        // Sudah putar 180° (meskipun belum tentu lurus)
+        Motor_Stop_All();
+ 80032b8:	f001 f966 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L4: Putaran -180° SELESAI! Yaw angle: %.1f°\r\n", yawAngle_deg);
+ 80032bc:	4b86      	ldr	r3, [pc, #536]	@ (80034d8 <main+0x18f8>)
+ 80032be:	681b      	ldr	r3, [r3, #0]
+ 80032c0:	4618      	mov	r0, r3
+ 80032c2:	f7fd f941 	bl	8000548 <__aeabi_f2d>
+ 80032c6:	4602      	mov	r2, r0
+ 80032c8:	460b      	mov	r3, r1
+ 80032ca:	4889      	ldr	r0, [pc, #548]	@ (80034f0 <main+0x1910>)
+ 80032cc:	f008 fc06 	bl	800badc <iprintf>
+        HAL_Delay(500);
+ 80032d0:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
+ 80032d4:	f002 ff4a 	bl	800616c <HAL_Delay>
+
+        // Transisi ke koreksi lurus dengan sensor belakang
+        printf("STATE L4: Masuk mundur koreksi.\r\n");
+ 80032d8:	4886      	ldr	r0, [pc, #536]	@ (80034f4 <main+0x1914>)
+ 80032da:	f008 fc67 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_4_MUNDUR_KOREKSI;
+ 80032de:	4b7a      	ldr	r3, [pc, #488]	@ (80034c8 <main+0x18e8>)
+ 80032e0:	2214      	movs	r2, #20
+ 80032e2:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_koreksi = HAL_GetTick();
+ 80032e4:	f002 ff36 	bl	8006154 <HAL_GetTick>
+ 80032e8:	4603      	mov	r3, r0
+ 80032ea:	4a7e      	ldr	r2, [pc, #504]	@ (80034e4 <main+0x1904>)
+ 80032ec:	6013      	str	r3, [r2, #0]
+        counter_koreksi_stabil = 0;
+ 80032ee:	4b7e      	ldr	r3, [pc, #504]	@ (80034e8 <main+0x1908>)
+ 80032f0:	2200      	movs	r2, #0
+ 80032f2:	701a      	strb	r2, [r3, #0]
+        waktu_mulai_putar_neg_180 = 0;
+ 80032f4:	4b77      	ldr	r3, [pc, #476]	@ (80034d4 <main+0x18f4>)
+ 80032f6:	2200      	movs	r2, #0
+ 80032f8:	601a      	str	r2, [r3, #0]
+        {
+          printf("Putar -180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+          last_debug_print = HAL_GetTick();
+        }
+      }
+      break;
+ 80032fa:	e1ad      	b.n	8003658 <main+0x1a78>
+        Motor_Rotate_Left(25);
+ 80032fc:	2019      	movs	r0, #25
+ 80032fe:	f001 fd1c 	bl	8004d3a <Motor_Rotate_Left>
+        if (HAL_GetTick() - last_debug_print > 500)
+ 8003302:	f002 ff27 	bl	8006154 <HAL_GetTick>
+ 8003306:	4602      	mov	r2, r0
+ 8003308:	4b7b      	ldr	r3, [pc, #492]	@ (80034f8 <main+0x1918>)
+ 800330a:	681b      	ldr	r3, [r3, #0]
+ 800330c:	1ad3      	subs	r3, r2, r3
+ 800330e:	f5b3 7ffa 	cmp.w	r3, #500	@ 0x1f4
+ 8003312:	f240 81a1 	bls.w	8003658 <main+0x1a78>
+          printf("Putar -180: Yaw=%.1f° | Target=180°\r\n", yawAngle_deg);
+ 8003316:	4b70      	ldr	r3, [pc, #448]	@ (80034d8 <main+0x18f8>)
+ 8003318:	681b      	ldr	r3, [r3, #0]
+ 800331a:	4618      	mov	r0, r3
+ 800331c:	f7fd f914 	bl	8000548 <__aeabi_f2d>
+ 8003320:	4602      	mov	r2, r0
+ 8003322:	460b      	mov	r3, r1
+ 8003324:	4875      	ldr	r0, [pc, #468]	@ (80034fc <main+0x191c>)
+ 8003326:	f008 fbd9 	bl	800badc <iprintf>
+          last_debug_print = HAL_GetTick();
+ 800332a:	f002 ff13 	bl	8006154 <HAL_GetTick>
+ 800332e:	4603      	mov	r3, r0
+ 8003330:	4a71      	ldr	r2, [pc, #452]	@ (80034f8 <main+0x1918>)
+ 8003332:	6013      	str	r3, [r2, #0]
+      break;
+ 8003334:	e190      	b.n	8003658 <main+0x1a78>
+
+    case STATE_LINTASAN_4_MUNDUR_KOREKSI:
+      if (sensor_e > batas_jarak_belakang && sensor_f > batas_jarak_belakang)
+ 8003336:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 800333a:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 800333e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8003342:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003346:	dd0c      	ble.n	8003362 <main+0x1782>
+ 8003348:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 800334c:	eeb2 7a0e 	vmov.f32	s14, #46	@ 0x41700000  15.0
+ 8003350:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8003354:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003358:	dd03      	ble.n	8003362 <main+0x1782>
+      {
+        // Masih jauh, lanjutkan mundur pelan
+        Motor_Reverse(kecepatan_motor);
+ 800335a:	2017      	movs	r0, #23
+ 800335c:	f001 fccb 	bl	8004cf6 <Motor_Reverse>
+        // Target tercapai, berhenti
+        Motor_Stop_All();
+        printf("Mentok Siap koreksi!\r\n");
+        keadaan_robot = STATE_LINTASAN_4_KOREKSI_LURUS;
+      }
+      break;
+ 8003360:	e17b      	b.n	800365a <main+0x1a7a>
+        Motor_Stop_All();
+ 8003362:	f001 f911 	bl	8004588 <Motor_Stop_All>
+        printf("Mentok Siap koreksi!\r\n");
+ 8003366:	4866      	ldr	r0, [pc, #408]	@ (8003500 <main+0x1920>)
+ 8003368:	f008 fc20 	bl	800bbac <puts>
+        keadaan_robot = STATE_LINTASAN_4_KOREKSI_LURUS;
+ 800336c:	4b56      	ldr	r3, [pc, #344]	@ (80034c8 <main+0x18e8>)
+ 800336e:	2215      	movs	r2, #21
+ 8003370:	701a      	strb	r2, [r3, #0]
+      break;
+ 8003372:	e172      	b.n	800365a <main+0x1a7a>
+
+    case STATE_LINTASAN_4_KOREKSI_LURUS:
+      // Timeout check - maksimal 5 detik untuk koreksi
+      if (HAL_GetTick() - waktu_mulai_koreksi > 5000)
+ 8003374:	f002 feee 	bl	8006154 <HAL_GetTick>
+ 8003378:	4602      	mov	r2, r0
+ 800337a:	4b5a      	ldr	r3, [pc, #360]	@ (80034e4 <main+0x1904>)
+ 800337c:	681b      	ldr	r3, [r3, #0]
+ 800337e:	1ad3      	subs	r3, r2, r3
+ 8003380:	f241 3288 	movw	r2, #5000	@ 0x1388
+ 8003384:	4293      	cmp	r3, r2
+ 8003386:	d910      	bls.n	80033aa <main+0x17ca>
+      {
+        Motor_Stop_All();
+ 8003388:	f001 f8fe 	bl	8004588 <Motor_Stop_All>
+        printf("STATE L4: Timeout koreksi lurus (5 detik), paksa lanjut.\r\n");
+ 800338c:	485d      	ldr	r0, [pc, #372]	@ (8003504 <main+0x1924>)
+ 800338e:	f008 fc0d 	bl	800bbac <puts>
+        keadaan_robot = STATE_SELESAI;
+ 8003392:	4b4d      	ldr	r3, [pc, #308]	@ (80034c8 <main+0x18e8>)
+ 8003394:	2216      	movs	r2, #22
+ 8003396:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 8003398:	f002 fedc 	bl	8006154 <HAL_GetTick>
+ 800339c:	4603      	mov	r3, r0
+ 800339e:	4a5a      	ldr	r2, [pc, #360]	@ (8003508 <main+0x1928>)
+ 80033a0:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = true;
+ 80033a2:	4b4b      	ldr	r3, [pc, #300]	@ (80034d0 <main+0x18f0>)
+ 80033a4:	2201      	movs	r2, #1
+ 80033a6:	701a      	strb	r2, [r3, #0]
+        break;
+ 80033a8:	e157      	b.n	800365a <main+0x1a7a>
+      }
+
+      // Validasi: Pastikan sensor belakang (E & F) mendeteksi dinding
+      if ((sensor_e > 0 && sensor_e < 150) && (sensor_f > 0 && sensor_f < 150))
+ 80033aa:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 80033ae:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 80033b2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80033b6:	f340 80ef 	ble.w	8003598 <main+0x19b8>
+ 80033ba:	edd7 7a0c 	vldr	s15, [r7, #48]	@ 0x30
+ 80033be:	ed9f 7a53 	vldr	s14, [pc, #332]	@ 800350c <main+0x192c>
+ 80033c2:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80033c6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80033ca:	f140 80e5 	bpl.w	8003598 <main+0x19b8>
+ 80033ce:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 80033d2:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 80033d6:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80033da:	f340 80dd 	ble.w	8003598 <main+0x19b8>
+ 80033de:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 80033e2:	ed9f 7a4a 	vldr	s14, [pc, #296]	@ 800350c <main+0x192c>
+ 80033e6:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 80033ea:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 80033ee:	f140 80d3 	bpl.w	8003598 <main+0x19b8>
+      {
+
+        float selisih_belakang = fabs(sensor_e - sensor_f);
+ 80033f2:	ed97 7a0c 	vldr	s14, [r7, #48]	@ 0x30
+ 80033f6:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 80033fa:	ee77 7a67 	vsub.f32	s15, s14, s15
+ 80033fe:	eef0 7ae7 	vabs.f32	s15, s15
+ 8003402:	edc7 7a05 	vstr	s15, [r7, #20]
+
+        if (selisih_belakang > 1.0f)
+ 8003406:	edd7 7a05 	vldr	s15, [r7, #20]
+ 800340a:	eeb7 7a00 	vmov.f32	s14, #112	@ 0x3f800000  1.0
+ 800340e:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8003412:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8003416:	dd7f      	ble.n	8003518 <main+0x1938>
+        {
+          // Robot belum lurus, perlu koreksi
+          counter_koreksi_stabil = 0; // Reset counter stabilitas
+ 8003418:	4b33      	ldr	r3, [pc, #204]	@ (80034e8 <main+0x1908>)
+ 800341a:	2200      	movs	r2, #0
+ 800341c:	701a      	strb	r2, [r3, #0]
+
+          if (sensor_e > sensor_f)
+ 800341e:	ed97 7a0c 	vldr	s14, [r7, #48]	@ 0x30
+ 8003422:	edd7 7a0b 	vldr	s15, [r7, #44]	@ 0x2c
+ 8003426:	eeb4 7ae7 	vcmpe.f32	s14, s15
+ 800342a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800342e:	dd23      	ble.n	8003478 <main+0x1898>
+          {
+            // Sensor E (belakang kiri) lebih jauh
+            // Putar kiri untuk luruskan
+            printf("Koreksi L4: Putar kiri | E:%.1f > F:%.1f | Diff:%.1f\r\n",
+ 8003430:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8003432:	f7fd f889 	bl	8000548 <__aeabi_f2d>
+ 8003436:	4680      	mov	r8, r0
+ 8003438:	4689      	mov	r9, r1
+ 800343a:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 800343c:	f7fd f884 	bl	8000548 <__aeabi_f2d>
+ 8003440:	4604      	mov	r4, r0
+ 8003442:	460d      	mov	r5, r1
+ 8003444:	6978      	ldr	r0, [r7, #20]
+ 8003446:	f7fd f87f 	bl	8000548 <__aeabi_f2d>
+ 800344a:	4602      	mov	r2, r0
+ 800344c:	460b      	mov	r3, r1
+ 800344e:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 8003452:	e9cd 4500 	strd	r4, r5, [sp]
+ 8003456:	4642      	mov	r2, r8
+ 8003458:	464b      	mov	r3, r9
+ 800345a:	482d      	ldr	r0, [pc, #180]	@ (8003510 <main+0x1930>)
+ 800345c:	f008 fb3e 	bl	800badc <iprintf>
+                   sensor_e, sensor_f, selisih_belakang);
+            Motor_Rotate_Left(25);
+ 8003460:	2019      	movs	r0, #25
+ 8003462:	f001 fc6a 	bl	8004d3a <Motor_Rotate_Left>
+            HAL_Delay(100);
+ 8003466:	2064      	movs	r0, #100	@ 0x64
+ 8003468:	f002 fe80 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 800346c:	f001 f88c 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 8003470:	2032      	movs	r0, #50	@ 0x32
+ 8003472:	f002 fe7b 	bl	800616c <HAL_Delay>
+      {
+ 8003476:	e0b1      	b.n	80035dc <main+0x19fc>
+          }
+          else
+          {
+            // Sensor F (belakang kanan) lebih jauh
+            // Putar kanan untuk luruskan
+            printf("Koreksi L4: Putar kanan | F:%.1f > E:%.1f | Diff:%.1f\r\n",
+ 8003478:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 800347a:	f7fd f865 	bl	8000548 <__aeabi_f2d>
+ 800347e:	4680      	mov	r8, r0
+ 8003480:	4689      	mov	r9, r1
+ 8003482:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8003484:	f7fd f860 	bl	8000548 <__aeabi_f2d>
+ 8003488:	4604      	mov	r4, r0
+ 800348a:	460d      	mov	r5, r1
+ 800348c:	6978      	ldr	r0, [r7, #20]
+ 800348e:	f7fd f85b 	bl	8000548 <__aeabi_f2d>
+ 8003492:	4602      	mov	r2, r0
+ 8003494:	460b      	mov	r3, r1
+ 8003496:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 800349a:	e9cd 4500 	strd	r4, r5, [sp]
+ 800349e:	4642      	mov	r2, r8
+ 80034a0:	464b      	mov	r3, r9
+ 80034a2:	481c      	ldr	r0, [pc, #112]	@ (8003514 <main+0x1934>)
+ 80034a4:	f008 fb1a 	bl	800badc <iprintf>
+                   sensor_f, sensor_e, selisih_belakang);
+            Motor_Rotate_Right(25);
+ 80034a8:	2019      	movs	r0, #25
+ 80034aa:	f001 fc72 	bl	8004d92 <Motor_Rotate_Right>
+            HAL_Delay(100);
+ 80034ae:	2064      	movs	r0, #100	@ 0x64
+ 80034b0:	f002 fe5c 	bl	800616c <HAL_Delay>
+            Motor_Stop_All();
+ 80034b4:	f001 f868 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(50);
+ 80034b8:	2032      	movs	r0, #50	@ 0x32
+ 80034ba:	f002 fe57 	bl	800616c <HAL_Delay>
+      {
+ 80034be:	e08d      	b.n	80035dc <main+0x19fc>
+ 80034c0:	08010aa0 	.word	0x08010aa0
+ 80034c4:	08010ae4 	.word	0x08010ae4
+ 80034c8:	20000750 	.word	0x20000750
+ 80034cc:	080103a8 	.word	0x080103a8
+ 80034d0:	20000758 	.word	0x20000758
+ 80034d4:	20000770 	.word	0x20000770
+ 80034d8:	200007d0 	.word	0x200007d0
+ 80034dc:	200007d4 	.word	0x200007d4
+ 80034e0:	08010b0c 	.word	0x08010b0c
+ 80034e4:	2000075c 	.word	0x2000075c
+ 80034e8:	20000760 	.word	0x20000760
+ 80034ec:	c37a0000 	.word	0xc37a0000
+ 80034f0:	08010b48 	.word	0x08010b48
+ 80034f4:	08010b80 	.word	0x08010b80
+ 80034f8:	200007ec 	.word	0x200007ec
+ 80034fc:	08010ba4 	.word	0x08010ba4
+ 8003500:	08010820 	.word	0x08010820
+ 8003504:	08010bcc 	.word	0x08010bcc
+ 8003508:	20000754 	.word	0x20000754
+ 800350c:	43160000 	.word	0x43160000
+ 8003510:	08010c08 	.word	0x08010c08
+ 8003514:	08010c40 	.word	0x08010c40
+          }
+        }
+        else
+        {
+          // Robot sudah cukup lurus (selisih <= 1.0cm)
+          counter_koreksi_stabil++;
+ 8003518:	4b52      	ldr	r3, [pc, #328]	@ (8003664 <main+0x1a84>)
+ 800351a:	781b      	ldrb	r3, [r3, #0]
+ 800351c:	3301      	adds	r3, #1
+ 800351e:	b2da      	uxtb	r2, r3
+ 8003520:	4b50      	ldr	r3, [pc, #320]	@ (8003664 <main+0x1a84>)
+ 8003522:	701a      	strb	r2, [r3, #0]
+          printf("Lurus L4! E:%.1f F:%.1f | Diff:%.1f | Stabil:%d/3\r\n",
+ 8003524:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 8003526:	f7fd f80f 	bl	8000548 <__aeabi_f2d>
+ 800352a:	4680      	mov	r8, r0
+ 800352c:	4689      	mov	r9, r1
+ 800352e:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 8003530:	f7fd f80a 	bl	8000548 <__aeabi_f2d>
+ 8003534:	4604      	mov	r4, r0
+ 8003536:	460d      	mov	r5, r1
+ 8003538:	6978      	ldr	r0, [r7, #20]
+ 800353a:	f7fd f805 	bl	8000548 <__aeabi_f2d>
+ 800353e:	4602      	mov	r2, r0
+ 8003540:	460b      	mov	r3, r1
+ 8003542:	4948      	ldr	r1, [pc, #288]	@ (8003664 <main+0x1a84>)
+ 8003544:	7809      	ldrb	r1, [r1, #0]
+ 8003546:	9104      	str	r1, [sp, #16]
+ 8003548:	e9cd 2302 	strd	r2, r3, [sp, #8]
+ 800354c:	e9cd 4500 	strd	r4, r5, [sp]
+ 8003550:	4642      	mov	r2, r8
+ 8003552:	464b      	mov	r3, r9
+ 8003554:	4844      	ldr	r0, [pc, #272]	@ (8003668 <main+0x1a88>)
+ 8003556:	f008 fac1 	bl	800badc <iprintf>
+                 sensor_e, sensor_f, selisih_belakang, counter_koreksi_stabil);
+
+          if (counter_koreksi_stabil >= 3)
+ 800355a:	4b42      	ldr	r3, [pc, #264]	@ (8003664 <main+0x1a84>)
+ 800355c:	781b      	ldrb	r3, [r3, #0]
+ 800355e:	2b02      	cmp	r3, #2
+ 8003560:	d914      	bls.n	800358c <main+0x19ac>
+          {
+            // Validasi: Sudah lurus 3x pembacaan berturut-turut
+            Motor_Stop_All();
+ 8003562:	f001 f811 	bl	8004588 <Motor_Stop_All>
+            printf("STATE L4: Koreksi lurus SELESAI! Lanjut Lintasan 3.\r\n");
+ 8003566:	4841      	ldr	r0, [pc, #260]	@ (800366c <main+0x1a8c>)
+ 8003568:	f008 fb20 	bl	800bbac <puts>
+            HAL_Delay(1000);
+ 800356c:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 8003570:	f002 fdfc 	bl	800616c <HAL_Delay>
+            keadaan_robot = STATE_SELESAI;
+ 8003574:	4b3e      	ldr	r3, [pc, #248]	@ (8003670 <main+0x1a90>)
+ 8003576:	2216      	movs	r2, #22
+ 8003578:	701a      	strb	r2, [r3, #0]
+            waktu_terakhir_gerak = HAL_GetTick();
+ 800357a:	f002 fdeb 	bl	8006154 <HAL_GetTick>
+ 800357e:	4603      	mov	r3, r0
+ 8003580:	4a3c      	ldr	r2, [pc, #240]	@ (8003674 <main+0x1a94>)
+ 8003582:	6013      	str	r3, [r2, #0]
+            sedang_bergerak = true;
+ 8003584:	4b3c      	ldr	r3, [pc, #240]	@ (8003678 <main+0x1a98>)
+ 8003586:	2201      	movs	r2, #1
+ 8003588:	701a      	strb	r2, [r3, #0]
+      {
+ 800358a:	e027      	b.n	80035dc <main+0x19fc>
+          }
+          else
+          {
+            // Tunggu pembacaan sensor berikutnya untuk validasi
+            Motor_Stop_All();
+ 800358c:	f000 fffc 	bl	8004588 <Motor_Stop_All>
+            HAL_Delay(100);
+ 8003590:	2064      	movs	r0, #100	@ 0x64
+ 8003592:	f002 fdeb 	bl	800616c <HAL_Delay>
+      {
+ 8003596:	e021      	b.n	80035dc <main+0x19fc>
+        }
+      }
+      else
+      {
+        // Sensor belakang tidak mendeteksi dinding (nilai 0 atau > 50cm)
+        printf("Warning L2: Dinding belakang tidak terdeteksi (E:%.1f F:%.1f)\r\n",
+ 8003598:	6b38      	ldr	r0, [r7, #48]	@ 0x30
+ 800359a:	f7fc ffd5 	bl	8000548 <__aeabi_f2d>
+ 800359e:	4604      	mov	r4, r0
+ 80035a0:	460d      	mov	r5, r1
+ 80035a2:	6af8      	ldr	r0, [r7, #44]	@ 0x2c
+ 80035a4:	f7fc ffd0 	bl	8000548 <__aeabi_f2d>
+ 80035a8:	4602      	mov	r2, r0
+ 80035aa:	460b      	mov	r3, r1
+ 80035ac:	e9cd 2300 	strd	r2, r3, [sp]
+ 80035b0:	4622      	mov	r2, r4
+ 80035b2:	462b      	mov	r3, r5
+ 80035b4:	4831      	ldr	r0, [pc, #196]	@ (800367c <main+0x1a9c>)
+ 80035b6:	f008 fa91 	bl	800badc <iprintf>
+               sensor_e, sensor_f);
+        printf("STATE L2: Skip koreksi, langsung ke Lintasan 3.\r\n");
+ 80035ba:	4831      	ldr	r0, [pc, #196]	@ (8003680 <main+0x1aa0>)
+ 80035bc:	f008 faf6 	bl	800bbac <puts>
+        Motor_Stop_All();
+ 80035c0:	f000 ffe2 	bl	8004588 <Motor_Stop_All>
+        keadaan_robot = STATE_SELESAI;
+ 80035c4:	4b2a      	ldr	r3, [pc, #168]	@ (8003670 <main+0x1a90>)
+ 80035c6:	2216      	movs	r2, #22
+ 80035c8:	701a      	strb	r2, [r3, #0]
+        waktu_terakhir_gerak = HAL_GetTick();
+ 80035ca:	f002 fdc3 	bl	8006154 <HAL_GetTick>
+ 80035ce:	4603      	mov	r3, r0
+ 80035d0:	4a28      	ldr	r2, [pc, #160]	@ (8003674 <main+0x1a94>)
+ 80035d2:	6013      	str	r3, [r2, #0]
+        sedang_bergerak = true;
+ 80035d4:	4b28      	ldr	r3, [pc, #160]	@ (8003678 <main+0x1a98>)
+ 80035d6:	2201      	movs	r2, #1
+ 80035d8:	701a      	strb	r2, [r3, #0]
+      }
+      break;
+ 80035da:	e03e      	b.n	800365a <main+0x1a7a>
+ 80035dc:	e03d      	b.n	800365a <main+0x1a7a>
+
+    case STATE_SELESAI:
+      printf("STATE: Siklus Selesai. Mengulang dari awal.\r\n");
+ 80035de:	4829      	ldr	r0, [pc, #164]	@ (8003684 <main+0x1aa4>)
+ 80035e0:	f008 fae4 	bl	800bbac <puts>
+      HAL_Delay(2000);
+ 80035e4:	f44f 60fa 	mov.w	r0, #2000	@ 0x7d0
+ 80035e8:	f002 fdc0 	bl	800616c <HAL_Delay>
+      keadaan_robot = STATE_START;
+ 80035ec:	4b20      	ldr	r3, [pc, #128]	@ (8003670 <main+0x1a90>)
+ 80035ee:	2201      	movs	r2, #1
+ 80035f0:	701a      	strb	r2, [r3, #0]
+      break;
+ 80035f2:	e032      	b.n	800365a <main+0x1a7a>
+
+    case STATE_ERROR:
+      printf("\r\n========================================\r\n");
+ 80035f4:	4824      	ldr	r0, [pc, #144]	@ (8003688 <main+0x1aa8>)
+ 80035f6:	f008 fad9 	bl	800bbac <puts>
+      printf("CRITICAL ERROR: Robot entered ERROR state!\r\n");
+ 80035fa:	4824      	ldr	r0, [pc, #144]	@ (800368c <main+0x1aac>)
+ 80035fc:	f008 fad6 	bl	800bbac <puts>
+      printf("========================================\r\n");
+ 8003600:	4823      	ldr	r0, [pc, #140]	@ (8003690 <main+0x1ab0>)
+ 8003602:	f008 fad3 	bl	800bbac <puts>
+      printf("Stopping all motors...\r\n");
+ 8003606:	4823      	ldr	r0, [pc, #140]	@ (8003694 <main+0x1ab4>)
+ 8003608:	f008 fad0 	bl	800bbac <puts>
+      printf("Activating STATE ERROR buzzer alert...\r\n");
+ 800360c:	4822      	ldr	r0, [pc, #136]	@ (8003698 <main+0x1ab8>)
+ 800360e:	f008 facd 	bl	800bbac <puts>
+      printf("Pattern: 5 short beeps → continuous slow beeps\r\n");
+ 8003612:	4822      	ldr	r0, [pc, #136]	@ (800369c <main+0x1abc>)
+ 8003614:	f008 faca 	bl	800bbac <puts>
+      printf("Press RESET button to restart.\r\n");
+ 8003618:	4821      	ldr	r0, [pc, #132]	@ (80036a0 <main+0x1ac0>)
+ 800361a:	f008 fac7 	bl	800bbac <puts>
+      printf("========================================\r\n\r\n");
+ 800361e:	4821      	ldr	r0, [pc, #132]	@ (80036a4 <main+0x1ac4>)
+ 8003620:	f008 fac4 	bl	800bbac <puts>
+
+      Motor_Stop_All();
+ 8003624:	f000 ffb0 	bl	8004588 <Motor_Stop_All>
+      HAL_Delay(1000);            // Wait 1 second before buzzer
+ 8003628:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 800362c:	f002 fd9e 	bl	800616c <HAL_Delay>
+      buzzer_state_error_alert(); // Activate buzzer (infinite loop)
+ 8003630:	f7fe fa8a 	bl	8001b48 <buzzer_state_error_alert>
+      break;
+ 8003634:	e011      	b.n	800365a <main+0x1a7a>
+
+    default:
+      printf("STATE: undefined! Masuk ke mode Error.\r\n");
+ 8003636:	481c      	ldr	r0, [pc, #112]	@ (80036a8 <main+0x1ac8>)
+ 8003638:	f008 fab8 	bl	800bbac <puts>
+      keadaan_robot = STATE_ERROR;
+ 800363c:	4b0c      	ldr	r3, [pc, #48]	@ (8003670 <main+0x1a90>)
+ 800363e:	2217      	movs	r2, #23
+ 8003640:	701a      	strb	r2, [r3, #0]
+      break;
+ 8003642:	e00a      	b.n	800365a <main+0x1a7a>
+      break;
+ 8003644:	bf00      	nop
+ 8003646:	e008      	b.n	800365a <main+0x1a7a>
+      break;
+ 8003648:	bf00      	nop
+ 800364a:	e006      	b.n	800365a <main+0x1a7a>
+      break;
+ 800364c:	bf00      	nop
+ 800364e:	e004      	b.n	800365a <main+0x1a7a>
+      break;
+ 8003650:	bf00      	nop
+ 8003652:	e002      	b.n	800365a <main+0x1a7a>
+      break;
+ 8003654:	bf00      	nop
+ 8003656:	e000      	b.n	800365a <main+0x1a7a>
+      break;
+ 8003658:	bf00      	nop
+    }
+    HAL_Delay(10); // Delay kecil untuk stabilitas
+ 800365a:	200a      	movs	r0, #10
+ 800365c:	f002 fd86 	bl	800616c <HAL_Delay>
+>>>>>>> test-integration
   {
  8002f06:	f7fe be14 	b.w	8001b32 <main+0x92>
  8002f0a:	bf00      	nop
@@ -5467,9 +9088,9 @@ int main(void)
 
 08002f14 <SystemClock_Config>:
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
  8002f14:	b580      	push	{r7, lr}
@@ -5491,7 +9112,7 @@ void SystemClock_Config(void)
  8002f36:	611a      	str	r2, [r3, #16]
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
  8002f38:	2300      	movs	r3, #0
  8002f3a:	60bb      	str	r3, [r7, #8]
@@ -5520,8 +9141,8 @@ void SystemClock_Config(void)
  8002f6e:	687b      	ldr	r3, [r7, #4]
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
  8002f70:	2302      	movs	r3, #2
  8002f72:	623b      	str	r3, [r7, #32]
@@ -5562,11 +9183,18 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
+<<<<<<< HEAD
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
  8002fa8:	230f      	movs	r3, #15
  8002faa:	60fb      	str	r3, [r7, #12]
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+=======
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+ 8003740:	230f      	movs	r3, #15
+ 8003742:	60fb      	str	r3, [r7, #12]
+>>>>>>> test-integration
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
  8002fac:	2302      	movs	r3, #2
  8002fae:	613b      	str	r3, [r7, #16]
@@ -5601,11 +9229,19 @@ void SystemClock_Config(void)
  8002fe0:	40023800 	.word	0x40023800
  8002fe4:	40007000 	.word	0x40007000
 
+<<<<<<< HEAD
 08002fe8 <MX_TIM1_Init>:
   * @brief TIM1 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003780 <MX_TIM1_Init>:
+ * @brief TIM1 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM1_Init(void)
 {
  8002fe8:	b580      	push	{r7, lr}
@@ -5784,7 +9420,6 @@ static void MX_TIM1_Init(void)
   }
   /* USER CODE BEGIN TIM1_Init 2 */
   /* USER CODE END TIM1_Init 2 */
-
 }
  8003100:	bf00      	nop
  8003102:	3728      	adds	r7, #40	@ 0x28
@@ -5793,11 +9428,19 @@ static void MX_TIM1_Init(void)
  8003108:	200004c0 	.word	0x200004c0
  800310c:	40010000 	.word	0x40010000
 
+<<<<<<< HEAD
 08003110 <MX_TIM2_Init>:
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
   */
+=======
+080038a8 <MX_TIM2_Init>:
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM2_Init(void)
 {
  8003110:	b580      	push	{r7, lr}
@@ -5950,9 +9593,14 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
+<<<<<<< HEAD
  80031fe:	4803      	ldr	r0, [pc, #12]	@ (800320c <MX_TIM2_Init+0xfc>)
  8003200:	f001 fcda 	bl	8004bb8 <HAL_TIM_MspPostInit>
 
+=======
+ 8003996:	4803      	ldr	r0, [pc, #12]	@ (80039a4 <MX_TIM2_Init+0xfc>)
+ 8003998:	f001 ff56 	bl	8005848 <HAL_TIM_MspPostInit>
+>>>>>>> test-integration
 }
  8003204:	bf00      	nop
  8003206:	3738      	adds	r7, #56	@ 0x38
@@ -5960,11 +9608,19 @@ static void MX_TIM2_Init(void)
  800320a:	bd80      	pop	{r7, pc}
  800320c:	20000508 	.word	0x20000508
 
+<<<<<<< HEAD
 08003210 <MX_TIM3_Init>:
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
   */
+=======
+080039a8 <MX_TIM3_Init>:
+ * @brief TIM3 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM3_Init(void)
 {
  8003210:	b580      	push	{r7, lr}
@@ -6085,9 +9741,14 @@ static void MX_TIM3_Init(void)
   /* USER CODE BEGIN TIM3_Init 2 */
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+<<<<<<< HEAD
  80032c2:	4803      	ldr	r0, [pc, #12]	@ (80032d0 <MX_TIM3_Init+0xc0>)
  80032c4:	f001 fc78 	bl	8004bb8 <HAL_TIM_MspPostInit>
 
+=======
+ 8003a5a:	4803      	ldr	r0, [pc, #12]	@ (8003a68 <MX_TIM3_Init+0xc0>)
+ 8003a5c:	f001 fef4 	bl	8005848 <HAL_TIM_MspPostInit>
+>>>>>>> test-integration
 }
  80032c8:	bf00      	nop
  80032ca:	3728      	adds	r7, #40	@ 0x28
@@ -6096,11 +9757,19 @@ static void MX_TIM3_Init(void)
  80032d0:	20000550 	.word	0x20000550
  80032d4:	40000400 	.word	0x40000400
 
+<<<<<<< HEAD
 080032d8 <MX_TIM5_Init>:
   * @brief TIM5 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003a70 <MX_TIM5_Init>:
+ * @brief TIM5 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM5_Init(void)
 {
  80032d8:	b580      	push	{r7, lr}
@@ -6197,7 +9866,6 @@ static void MX_TIM5_Init(void)
   /* USER CODE BEGIN TIM5_Init 2 */
 
   /* USER CODE END TIM5_Init 2 */
-
 }
  8003362:	bf00      	nop
  8003364:	3718      	adds	r7, #24
@@ -6207,11 +9875,19 @@ static void MX_TIM5_Init(void)
  800336c:	20000598 	.word	0x20000598
  8003370:	40000c00 	.word	0x40000c00
 
+<<<<<<< HEAD
 08003374 <MX_TIM8_Init>:
   * @brief TIM8 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003b0c <MX_TIM8_Init>:
+ * @brief TIM8 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM8_Init(void)
 {
  8003374:	b580      	push	{r7, lr}
@@ -6390,7 +10066,6 @@ static void MX_TIM8_Init(void)
   }
   /* USER CODE BEGIN TIM8_Init 2 */
   /* USER CODE END TIM8_Init 2 */
-
 }
  800348c:	bf00      	nop
  800348e:	3728      	adds	r7, #40	@ 0x28
@@ -6399,11 +10074,19 @@ static void MX_TIM8_Init(void)
  8003494:	200005e0 	.word	0x200005e0
  8003498:	40010400 	.word	0x40010400
 
+<<<<<<< HEAD
 0800349c <MX_TIM9_Init>:
   * @brief TIM9 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003c34 <MX_TIM9_Init>:
+ * @brief TIM9 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM9_Init(void)
 {
  800349c:	b580      	push	{r7, lr}
@@ -6504,9 +10187,14 @@ static void MX_TIM9_Init(void)
 
   /* USER CODE END TIM9_Init 2 */
   HAL_TIM_MspPostInit(&htim9);
+<<<<<<< HEAD
  8003526:	4803      	ldr	r0, [pc, #12]	@ (8003534 <MX_TIM9_Init+0x98>)
  8003528:	f001 fb46 	bl	8004bb8 <HAL_TIM_MspPostInit>
 
+=======
+ 8003cbe:	4803      	ldr	r0, [pc, #12]	@ (8003ccc <MX_TIM9_Init+0x98>)
+ 8003cc0:	f001 fdc2 	bl	8005848 <HAL_TIM_MspPostInit>
+>>>>>>> test-integration
 }
  800352c:	bf00      	nop
  800352e:	3720      	adds	r7, #32
@@ -6515,11 +10203,19 @@ static void MX_TIM9_Init(void)
  8003534:	20000628 	.word	0x20000628
  8003538:	40014000 	.word	0x40014000
 
+<<<<<<< HEAD
 0800353c <MX_TIM12_Init>:
   * @brief TIM12 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003cd4 <MX_TIM12_Init>:
+ * @brief TIM12 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_TIM12_Init(void)
 {
  800353c:	b580      	push	{r7, lr}
@@ -6620,9 +10316,14 @@ static void MX_TIM12_Init(void)
 
   /* USER CODE END TIM12_Init 2 */
   HAL_TIM_MspPostInit(&htim12);
+<<<<<<< HEAD
  80035c6:	4803      	ldr	r0, [pc, #12]	@ (80035d4 <MX_TIM12_Init+0x98>)
  80035c8:	f001 faf6 	bl	8004bb8 <HAL_TIM_MspPostInit>
 
+=======
+ 8003d5e:	4803      	ldr	r0, [pc, #12]	@ (8003d6c <MX_TIM12_Init+0x98>)
+ 8003d60:	f001 fd72 	bl	8005848 <HAL_TIM_MspPostInit>
+>>>>>>> test-integration
 }
  80035cc:	bf00      	nop
  80035ce:	3720      	adds	r7, #32
@@ -6631,11 +10332,19 @@ static void MX_TIM12_Init(void)
  80035d4:	20000670 	.word	0x20000670
  80035d8:	40001800 	.word	0x40001800
 
+<<<<<<< HEAD
 080035dc <MX_USART1_UART_Init>:
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003d74 <MX_USART1_UART_Init>:
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_USART1_UART_Init(void)
 {
  80035dc:	b580      	push	{r7, lr}
@@ -6689,7 +10398,6 @@ static void MX_USART1_UART_Init(void)
   }
   /* USER CODE BEGIN USART1_Init 2 */
   /* USER CODE END USART1_Init 2 */
-
 }
  8003622:	bf00      	nop
  8003624:	bd80      	pop	{r7, pc}
@@ -6697,11 +10405,19 @@ static void MX_USART1_UART_Init(void)
  8003628:	200006b8 	.word	0x200006b8
  800362c:	40011000 	.word	0x40011000
 
+<<<<<<< HEAD
 08003630 <MX_USART3_UART_Init>:
   * @brief USART3 Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003dc8 <MX_USART3_UART_Init>:
+ * @brief USART3 Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_USART3_UART_Init(void)
 {
  8003630:	b580      	push	{r7, lr}
@@ -6756,7 +10472,6 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
-
 }
  8003676:	bf00      	nop
  8003678:	bd80      	pop	{r7, pc}
@@ -6764,17 +10479,26 @@ static void MX_USART3_UART_Init(void)
  800367c:	20000700 	.word	0x20000700
  8003680:	40004800 	.word	0x40004800
 
+<<<<<<< HEAD
 08003684 <MX_GPIO_Init>:
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
   */
+=======
+08003e1c <MX_GPIO_Init>:
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+>>>>>>> test-integration
 static void MX_GPIO_Init(void)
 {
  8003684:	b580      	push	{r7, lr}
  8003686:	b08c      	sub	sp, #48	@ 0x30
  8003688:	af00      	add	r7, sp, #0
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+<<<<<<< HEAD
  800368a:	f107 031c 	add.w	r3, r7, #28
  800368e:	2200      	movs	r2, #0
  8003690:	601a      	str	r2, [r3, #0]
@@ -6784,6 +10508,17 @@ static void MX_GPIO_Init(void)
  8003698:	611a      	str	r2, [r3, #16]
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
+=======
+ 8003e22:	f107 031c 	add.w	r3, r7, #28
+ 8003e26:	2200      	movs	r2, #0
+ 8003e28:	601a      	str	r2, [r3, #0]
+ 8003e2a:	605a      	str	r2, [r3, #4]
+ 8003e2c:	609a      	str	r2, [r3, #8]
+ 8003e2e:	60da      	str	r2, [r3, #12]
+ 8003e30:	611a      	str	r2, [r3, #16]
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
+>>>>>>> test-integration
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
@@ -6839,6 +10574,7 @@ static void MX_GPIO_Init(void)
  8003706:	60fb      	str	r3, [r7, #12]
  8003708:	68fb      	ldr	r3, [r7, #12]
   __HAL_RCC_GPIOD_CLK_ENABLE();
+<<<<<<< HEAD
  800370a:	2300      	movs	r3, #0
  800370c:	60bb      	str	r3, [r7, #8]
  800370e:	4b2e      	ldr	r3, [pc, #184]	@ (80037c8 <MX_GPIO_Init+0x144>)
@@ -6890,6 +10626,72 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = Trig_1_Pin|Trig_2_Pin|Trig_3_Pin;
  8003766:	f44f 43a8 	mov.w	r3, #21504	@ 0x5400
  800376a:	61fb      	str	r3, [r7, #28]
+=======
+ 8003ebe:	2300      	movs	r3, #0
+ 8003ec0:	607b      	str	r3, [r7, #4]
+ 8003ec2:	4b42      	ldr	r3, [pc, #264]	@ (8003fcc <MX_GPIO_Init+0x1b0>)
+ 8003ec4:	6b1b      	ldr	r3, [r3, #48]	@ 0x30
+ 8003ec6:	4a41      	ldr	r2, [pc, #260]	@ (8003fcc <MX_GPIO_Init+0x1b0>)
+ 8003ec8:	f043 0308 	orr.w	r3, r3, #8
+ 8003ecc:	6313      	str	r3, [r2, #48]	@ 0x30
+ 8003ece:	4b3f      	ldr	r3, [pc, #252]	@ (8003fcc <MX_GPIO_Init+0x1b0>)
+ 8003ed0:	6b1b      	ldr	r3, [r3, #48]	@ 0x30
+ 8003ed2:	f003 0308 	and.w	r3, r3, #8
+ 8003ed6:	607b      	str	r3, [r7, #4]
+ 8003ed8:	687b      	ldr	r3, [r7, #4]
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_0 | GPIO_PIN_2, GPIO_PIN_RESET);
+ 8003eda:	2200      	movs	r2, #0
+ 8003edc:	f242 0105 	movw	r1, #8197	@ 0x2005
+ 8003ee0:	483b      	ldr	r0, [pc, #236]	@ (8003fd0 <MX_GPIO_Init+0x1b4>)
+ 8003ee2:	f002 fcbf 	bl	8006864 <HAL_GPIO_WritePin>
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, Trig_1_Pin | Trig_2_Pin | Trig_3_Pin, GPIO_PIN_RESET);
+ 8003ee6:	2200      	movs	r2, #0
+ 8003ee8:	f44f 41a8 	mov.w	r1, #21504	@ 0x5400
+ 8003eec:	4839      	ldr	r0, [pc, #228]	@ (8003fd4 <MX_GPIO_Init+0x1b8>)
+ 8003eee:	f002 fcb9 	bl	8006864 <HAL_GPIO_WritePin>
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, Trig_8_Pin | Trig_7_Pin | Trig_6_Pin | Trig_5_Pin, GPIO_PIN_RESET);
+ 8003ef2:	2200      	movs	r2, #0
+ 8003ef4:	f44f 4170 	mov.w	r1, #61440	@ 0xf000
+ 8003ef8:	4837      	ldr	r0, [pc, #220]	@ (8003fd8 <MX_GPIO_Init+0x1bc>)
+ 8003efa:	f002 fcb3 	bl	8006864 <HAL_GPIO_WritePin>
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Trig_4_GPIO_Port, Trig_4_Pin, GPIO_PIN_RESET);
+ 8003efe:	2200      	movs	r2, #0
+ 8003f00:	f44f 5180 	mov.w	r1, #4096	@ 0x1000
+ 8003f04:	4835      	ldr	r0, [pc, #212]	@ (8003fdc <MX_GPIO_Init+0x1c0>)
+ 8003f06:	f002 fcad 	bl	8006864 <HAL_GPIO_WritePin>
+
+  /*Configure GPIO pins : PC13 PC0 PC2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_0 | GPIO_PIN_2;
+ 8003f0a:	f242 0305 	movw	r3, #8197	@ 0x2005
+ 8003f0e:	61fb      	str	r3, [r7, #28]
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+ 8003f10:	2301      	movs	r3, #1
+ 8003f12:	623b      	str	r3, [r7, #32]
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 8003f14:	2300      	movs	r3, #0
+ 8003f16:	627b      	str	r3, [r7, #36]	@ 0x24
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+ 8003f18:	2300      	movs	r3, #0
+ 8003f1a:	62bb      	str	r3, [r7, #40]	@ 0x28
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 8003f1c:	f107 031c 	add.w	r3, r7, #28
+ 8003f20:	4619      	mov	r1, r3
+ 8003f22:	482b      	ldr	r0, [pc, #172]	@ (8003fd0 <MX_GPIO_Init+0x1b4>)
+ 8003f24:	f002 faea 	bl	80064fc <HAL_GPIO_Init>
+
+  /*Configure GPIO pins : Trig_1_Pin Trig_2_Pin Trig_3_Pin */
+  GPIO_InitStruct.Pin = Trig_1_Pin | Trig_2_Pin | Trig_3_Pin;
+ 8003f28:	f44f 43a8 	mov.w	r3, #21504	@ 0x5400
+ 8003f2c:	61fb      	str	r3, [r7, #28]
+>>>>>>> test-integration
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  800376c:	2301      	movs	r3, #1
  800376e:	623b      	str	r3, [r7, #32]
@@ -6906,9 +10708,15 @@ static void MX_GPIO_Init(void)
  8003780:	f001 ff02 	bl	8005588 <HAL_GPIO_Init>
 
   /*Configure GPIO pins : Trig_8_Pin Trig_7_Pin Trig_6_Pin Trig_5_Pin */
+<<<<<<< HEAD
   GPIO_InitStruct.Pin = Trig_8_Pin|Trig_7_Pin|Trig_6_Pin|Trig_5_Pin;
  8003784:	f44f 4370 	mov.w	r3, #61440	@ 0xf000
  8003788:	61fb      	str	r3, [r7, #28]
+=======
+  GPIO_InitStruct.Pin = Trig_8_Pin | Trig_7_Pin | Trig_6_Pin | Trig_5_Pin;
+ 8003f46:	f44f 4370 	mov.w	r3, #61440	@ 0xf000
+ 8003f4a:	61fb      	str	r3, [r7, #28]
+>>>>>>> test-integration
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  800378a:	2301      	movs	r3, #1
  800378c:	623b      	str	r3, [r7, #32]
@@ -6943,8 +10751,55 @@ static void MX_GPIO_Init(void)
  80037ba:	4806      	ldr	r0, [pc, #24]	@ (80037d4 <MX_GPIO_Init+0x150>)
  80037bc:	f001 fee4 	bl	8005588 <HAL_GPIO_Init>
 
+<<<<<<< HEAD
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
+=======
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /*Configure GPIO pins : PC0 (GREEN BUTTON) and PC2 (RED BUTTON) */
+  // Active LOW dengan internal pull-up
+  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_2;
+ 8003f82:	2305      	movs	r3, #5
+ 8003f84:	61fb      	str	r3, [r7, #28]
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+ 8003f86:	2300      	movs	r3, #0
+ 8003f88:	623b      	str	r3, [r7, #32]
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+ 8003f8a:	2301      	movs	r3, #1
+ 8003f8c:	627b      	str	r3, [r7, #36]	@ 0x24
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 8003f8e:	f107 031c 	add.w	r3, r7, #28
+ 8003f92:	4619      	mov	r1, r3
+ 8003f94:	480e      	ldr	r0, [pc, #56]	@ (8003fd0 <MX_GPIO_Init+0x1b4>)
+ 8003f96:	f002 fab1 	bl	80064fc <HAL_GPIO_Init>
+
+  /*Configure GPIO pin : PC13 (BUZZER/LED indicator) */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+ 8003f9a:	f44f 5300 	mov.w	r3, #8192	@ 0x2000
+ 8003f9e:	61fb      	str	r3, [r7, #28]
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+ 8003fa0:	2301      	movs	r3, #1
+ 8003fa2:	623b      	str	r3, [r7, #32]
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 8003fa4:	2300      	movs	r3, #0
+ 8003fa6:	627b      	str	r3, [r7, #36]	@ 0x24
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+ 8003fa8:	2300      	movs	r3, #0
+ 8003faa:	62bb      	str	r3, [r7, #40]	@ 0x28
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 8003fac:	f107 031c 	add.w	r3, r7, #28
+ 8003fb0:	4619      	mov	r1, r3
+ 8003fb2:	4807      	ldr	r0, [pc, #28]	@ (8003fd0 <MX_GPIO_Init+0x1b4>)
+ 8003fb4:	f002 faa2 	bl	80064fc <HAL_GPIO_Init>
+
+  // Set PC13 initial state to OFF
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+ 8003fb8:	2200      	movs	r2, #0
+ 8003fba:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8003fbe:	4804      	ldr	r0, [pc, #16]	@ (8003fd0 <MX_GPIO_Init+0x1b4>)
+ 8003fc0:	f002 fc50 	bl	8006864 <HAL_GPIO_WritePin>
+  /* USER CODE END MX_GPIO_Init_2 */
+>>>>>>> test-integration
 }
  80037c0:	bf00      	nop
  80037c2:	3730      	adds	r7, #48	@ 0x30
@@ -6960,6 +10815,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 // Forward interrupt to sensor library
+<<<<<<< HEAD
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
  80037d8:	b580      	push	{r7, lr}
  80037da:	b082      	sub	sp, #8
@@ -6968,6 +10824,17 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
     HC_SR04_Capture_Callback(htim);
  80037e0:	6878      	ldr	r0, [r7, #4]
  80037e2:	f7fd ff51 	bl	8001688 <HC_SR04_Capture_Callback>
+=======
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+ 8003fe0:	b580      	push	{r7, lr}
+ 8003fe2:	b082      	sub	sp, #8
+ 8003fe4:	af00      	add	r7, sp, #0
+ 8003fe6:	6078      	str	r0, [r7, #4]
+  HC_SR04_Capture_Callback(htim);
+ 8003fe8:	6878      	ldr	r0, [r7, #4]
+ 8003fea:	f7fd fb4d 	bl	8001688 <HC_SR04_Capture_Callback>
+>>>>>>> test-integration
 }
  80037e6:	bf00      	nop
  80037e8:	3708      	adds	r7, #8
@@ -6976,9 +10843,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 
 080037ee <Error_Handler>:
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
  80037ee:	b480      	push	{r7}
