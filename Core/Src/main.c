@@ -1202,6 +1202,30 @@ int main(void)
         Motor_Stop_All();
         printf("Mentok belakang tercapai. Capture #2 (Belakang)!\r\n");
 
+        // ===================================================================
+        // INCREMENT GROUP ID SEBELUM capture di posisi belakang
+        // Foto dari belakang ini adalah awal group baru (group 2)
+        // Robot sudah selesai dokumentasi group 1 (foto-foto di koridor pertama)
+        // ===================================================================
+        group_counter++; // Increment group ID (1 → 2)
+        printf("\r\n========================================\r\n");
+        printf("[Group] Entering new corridor section!\r\n");
+        printf("[Group] Group ID incremented to: %d\r\n", group_counter);
+        printf("[Group] Updating ESP32-CAM with new Group ID...\r\n");
+
+        Vision_Status_t group_status = Vision_Set_Group_ID(group_counter);
+        if (group_status == VISION_OK)
+        {
+          printf("[Group] Group ID updated successfully.\r\n");
+          printf("[Group] Next photo will use Group ID %d.\r\n", group_counter);
+        }
+        else
+        {
+          printf("[Group] WARNING: Failed to update Group ID on ESP32-CAM!\r\n");
+          printf("[Group] Photos will continue with old Group ID.\r\n");
+        }
+        printf("========================================\r\n\r\n");
+
         // Simpan state tujuan, lalu trigger capture
         state_selanjutnya_setelah_capture = STATE_LINTASAN_1_MAJU_DARI_BELAKANG;
         keadaan_robot = STATE_TRIGGER_CAPTURE;
