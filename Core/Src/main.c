@@ -90,6 +90,13 @@ typedef enum
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+// ==================== WIFI SERIAL MONITOR CONFIGURATION ====================
+// Set to 1 jika ESP-01 WiFi module terpasang di UART2 (PA2/PA3)
+// Set to 0 jika TIDAK ada ESP-01 (untuk menghindari timeout delay)
+#define ENABLE_WIFI_SERIAL_MONITOR  0  // 0 = disabled, 1 = enabled
+// ===========================================================================
+
 // Konstanta untuk parameter gerak dan sensor
 #define batas_jarak_depan 20.0f    // jarak robot dengan dinding untuk sensor depan
 #define batas_jarak_belakang 15.0f // jarak robot dengan dingding untuk sensor belakang
@@ -284,12 +291,19 @@ void buzzer_state_error_alert(void)
 }
 
 // ==================== Override printf untuk UART ====================
-// Dual output: USB-TTL debug (UART1) + WiFi esp-link (UART2)
+// Output ke USB-TTL (UART1) dan optional WiFi esp-link (UART2)
 int _write(int file, char *ptr, int len)
 {
   (void)file; // Unused parameter
+
+  // Always output to USB-TTL debug
   HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 100); // USB-TTL debug (115200 baud)
+
+#if ENABLE_WIFI_SERIAL_MONITOR
+  // Only output to WiFi if ESP-01 is attached (to avoid 100ms timeout delay)
   HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 100); // WiFi esp-link (115200 baud)
+#endif
+
   return len;
 }
 /* USER CODE END 0 */
@@ -324,7 +338,9 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
-  MX_USART2_UART_Init();  // ESP-01 WiFi Serial Bridge (esp-link)
+#if ENABLE_WIFI_SERIAL_MONITOR
+  MX_USART2_UART_Init();  // ESP-01 WiFi Serial Bridge (only if enabled)
+#endif
   MX_TIM3_Init();
   MX_TIM5_Init();
   MX_TIM9_Init();
@@ -442,10 +458,15 @@ int main(void)
   printf("SYSTEM READY!\r\n");
   printf("All sensors initialized successfully.\r\n");
   printf("========================================\r\n");
+#if ENABLE_WIFI_SERIAL_MONITOR
   printf("WiFi Serial Monitor: ACTIVE (UART2)\r\n");
   printf("  - ESP-01 esp-link firmware required\r\n");
   printf("  - Access via: http://<esp-link-IP>\r\n");
   printf("  - Telnet: telnet <esp-link-IP> 23\r\n");
+#else
+  printf("WiFi Serial Monitor: DISABLED\r\n");
+  printf("  - Set ENABLE_WIFI_SERIAL_MONITOR=1 to enable\r\n");
+#endif
   printf("========================================\r\n");
   printf("Press GREEN BUTTON to start operation...\r\n");
   printf("(Press RED BUTTON anytime to stop)\r\n");
