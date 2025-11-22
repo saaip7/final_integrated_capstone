@@ -80,14 +80,13 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 1 */
 }
 
-#if 0
-#if 0
 /**
 * @brief I2C MSP Initialization
 * This function configures the hardware resources used in this example
 * @param hi2c: I2C handle pointer
 * @retval None
 */
+#if 0
 void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -119,16 +118,14 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
 
 }
 #endif
-#endif
 
-#if 0
-#if 0
 /**
 * @brief I2C MSP De-Initialization
 * This function freeze the hardware resources used in this example
 * @param hi2c: I2C handle pointer
 * @retval None
 */
+#if 0
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 {
   if(hi2c->Instance==I2C1)
@@ -153,7 +150,6 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
   }
 
 }
-#endif
 #endif
 
 /**
